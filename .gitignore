@@ -1,0 +1,13 @@
+# JetBrains PyCharm settings
+.idea/
+.idea
+__pycache__/*
+__pycache__*
+__pycache__
+eportal/.idea
+workspace.xml
+venv/
+
+# database stuffs
+result/migrations/
+# db.sqlite3
