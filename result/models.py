@@ -13,32 +13,32 @@ PASS = "PASS"
 FAIL = "FAIL"
 
 GRADE = (
-		(A, 'A'),
-		(B, 'B'),
-		(C, 'C'),
-		(D, 'D'),
-		(F, 'F'),
-	)
+    (A, 'A'),
+    (B, 'B'),
+    (C, 'C'),
+    (D, 'D'),
+    (F, 'F'),
+)
 
 COMMENT = (
-		(PASS, "PASS"),
-		(FAIL, "FAIL"),
-	)
+    (PASS, "PASS"),
+    (FAIL, "FAIL"),
+)
 
 LEVEL = (
-		("100", 100),
-		("200", 200),
-		("300", 300),
-		("400", 400),
-		("500", 500),
-	)
+    ("100", 100),
+    ("200", 200),
+    ("300", 300),
+    ("400", 400),
+    ("500", 500),
+)
 FIRST = "First"
 SECOND = "Second"
 
 SEMESTER = (
-		(FIRST, "First"),
-		(SECOND, "Second"),
-	)
+    (FIRST, "First"),
+    (SECOND, "Second"),
+)
 
 
 class User(AbstractUser):
@@ -111,15 +111,15 @@ class Course(models.Model):
 
 
 class Student(models.Model):
-	user = models.OneToOneField(User, on_delete=models.CASCADE)
-	id_number = models.CharField(max_length=20, unique=True)
-	level = models.CharField(choices=LEVEL, max_length=3)
+    user = models.OneToOneField(User, on_delete=models.CASCADE)
+    id_number = models.CharField(max_length=20, unique=True)
+    level = models.CharField(choices=LEVEL, max_length=3)
 
-	def __str__(self):
-		return self.id_number
+    def __str__(self):
+        return self.id_number
 
-	def get_absolute_url(self):
-		return reverse('profile')
+    def get_absolute_url(self):
+        return reverse('profile')
 
 
 class TakenCourse(models.Model):
@@ -139,18 +139,18 @@ class TakenCourse(models.Model):
         return int(ca) + int(exam)
 
     def get_grade(self, ca, exam):
-    	total = int(ca) + int(exam)
-    	if total >= 70:
-    		grade = A
-    	elif total >= 60:
-    		grade = B
-    	elif total >= 50:
-    		grade = C
-    	elif total >= 45:
-    		grade = D
-    	else:
-    	 	grade = F
-    	return grade
+        total = int(ca) + int(exam)
+        if total >= 70:
+            grade = A
+        elif total >= 60:
+            grade = B
+        elif total >= 50:
+            grade = C
+        elif total >= 45:
+            grade = D
+        else:
+            grade = F
+        return grade
 
     def get_comment(self, grade):
         if not grade == "F":

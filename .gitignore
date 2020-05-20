@@ -7,7 +7,3 @@ __pycache__
 eportal/.idea
 workspace.xml
 venv/
-
-# database stuffs
-result/migrations/
-# db.sqlite3
