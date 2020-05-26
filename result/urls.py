@@ -42,4 +42,5 @@ urlpatterns = [
 	path('result/print/<int:id>/', views.result_sheet_pdf_view, name='result_sheet_pdf_view'),
 	path('registration/form/', views.course_registration_form, name='course_registration_form'),
 	path('api/data/', views.get_chart, name='chart'),
+	path('coursepdf/', views.course_registration_pdf, name='course_registration_pdf'),
 ]
