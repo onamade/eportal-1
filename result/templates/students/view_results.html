@@ -77,18 +77,18 @@ overflow-y: auto;
 <br>
 <tbody>
   {% for result in result %}
-  {% if result.semester == "First" %}
+  {% if result.semester == "First" and result.level == result.student.level %}
   <tr>
     <th scope="row"></th>
     <th></th>
-    <th><label>First Semester GPA:</label> {{ result.gpa }}</th>
+    <th><label>{{ result.level }}L First Semester GPA:</label> {{ result.gpa }}</th>
   </tr>
   <br>
-  {% elif result.semester == "Second" %}
+  {% elif result.semester == "Second" and result.level == result.student.level %}
     <tr>
     <th scope="row"></th>
     <th></th>
-    <th><label>Second Semester GPA:</label> {{ result.gpa }}</th>
+    <th><label>{{ result.level }}L Second Semester GPA:</label> {{ result.gpa }}</th>
   </tr>
   <br>
   {% endif %}
@@ -96,7 +96,14 @@ overflow-y: auto;
   <tr>
     <th scope="row"></th>
     <th></th>
-    <th><label>Previous CGPA:</label> {{ previousCGPA }}</th>
+    {% if currentCGPA %}
+      <th><label>CGPA:</label> {{ currentCGPA }}</th>
+    {% else %}
+       <th><label>CGPA:</label> Not ready yet!</th>
+    {% endif %}<br>
+
+    {% comment %} <th><label>Previous CGPA:</label> {{ previousCGPA }}</th> {% endcomment %}
+
   </tr>
 </tbody>
 </div>

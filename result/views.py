@@ -735,24 +735,34 @@ def view_result(request):
 
     previousCGPA = 0
     previousLEVEL = 0
-
-    for i in result:
-        if not int(i.level) - 100 == 0:  # TODO think n check the logic
-            previousLEVEL = i.level
-            try:
-                a = Result.objects.get(
-                    student__user__pk=request.user.id, level=previousLEVEL, semester="Second")
-                previousCGPA = a.cgpa
-                break
-            except:
-                previousCGPA = 0
-        else:
-            break
+    currentCGPA = 0
+    # TODO : implement previousCGPA funtionality later
+    # for i in result:
+    #     if not int(i.level) - 100 == 0:  # TODO think n check the logic : no pre for 100l
+    #         previousLEVEL = int(i.level) - 100
+    #         try:
+    #             a = Result.objects.get(
+    #                 student__user__pk=request.user.id, level=previousLEVEL, semester="Second")
+    #             previousCGPA = a.cgpa
+    #             break
+    #         except:
+    #             previousCGPA = 0
+    try:
+        a = Result.objects.get(
+            student__user__pk=request.user.id, level=student.level, semester="Second")
+        currentCGPA = a.cgpa
+    except:
+        currentCGPA = 0
+        # else:
+        #     a = Result.objects.get(
+        #             student__user__pk=request.user.id, level=i.level, semester="Second")
+        #     currentCGPA = a.cgpa
     context = {
         "courses": courses,
         "result": result,
         "student": student,
         "previousCGPA": previousCGPA,
+        "currentCGPA": currentCGPA,
     }
 
     return render(request, 'students/view_results.html', context)
