@@ -1,4 +1,4 @@
-# Adeleke University Course and Result Management System.
+# University Course and Result Management System.
 
 ## To make this project up and running on your system, please follow the instructions below:
 1. Open the command line and run the following commands
