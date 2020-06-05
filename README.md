@@ -2,6 +2,8 @@
 
 ## To make this project up and running on your system, please follow the instructions below
 
+# University Course and Result Management System.
+
 1. Open the command line and run the following commands
 
 1. fork the repo to your account
