@@ -18,7 +18,7 @@ urlpatterns = [
 	path('course/delete/<int:pk>/', views.delete_course, name="delete_course"),
 	path('course/edit/<int:pk>/', views.course_edit, name="course_edit"),
 	path('students/', views.student_list, name="student_list"),
-	path('student/add/new/', views.StudentAddView.as_view(), name="add_new_student"),
+	path('student/add/new/', views.StudentAddView, name="add_new_student"),
 	path('student/delete/<int:pk>/', views.delete_student, name="delete_student"),
 	path('student/edit/<int:pk>/', views.edit_student, name="edit_student"),
 	path('session/', views.session_list_view, name="manage_session"),
@@ -42,4 +42,5 @@ urlpatterns = [
 	path('result/print/<int:id>/', views.result_sheet_pdf_view, name='result_sheet_pdf_view'),
 	path('registration/form/', views.course_registration_form, name='course_registration_form'),
 	path('api/data/', views.get_chart, name='chart'),
+	path('coursepdf/', views.course_registration_pdf, name='course_registration_pdf'),
 ]

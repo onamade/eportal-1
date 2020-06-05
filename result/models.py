@@ -220,28 +220,48 @@ class TakenCourse(models.Model):
                 previousCGPA += i.cgpa
         cgpa = 0
         if str(current_semester) == SECOND:
-            try:
-                first_sem_gpa = Result.objects.get(
-                    student=self.student.id, semester=FIRST, level=self.student.level)
-                first_sem_gpa += first_sem_gpa.gpa
-            except:
-                first_sem_gpa = 0
+            # try:
+            #     first_sem_gpa = Result.objects.get(
+            #         student=self.student.id, semester=FIRST, level=self.student.level)
+            #     first_sem_gpas = first_sem_gpa.gpa
+            # except:
+            #     first_sem_gpas = 0
 
-            try:
-                sec_sem_gpa = Result.objects.get(
-                    student=self.student.id, semester=SECOND, level=self.student.level)
-                sec_sem_gpa += sec_sem_gpa.gpa
-            except:
-                sec_sem_gpa = 0
+            # try:
+            #     sec_sem_gpa = Result.objects.get(
+            #         student=self.student.id, semester=SECOND, level=self.student.level)
+            #     sec_sem_gpas = sec_sem_gpa.gpa
+            # except:
+            #     sec_sem_gpas = 0
 
             taken_courses = TakenCourse.objects.filter(
                 student=self.student, student__level=self.student.level)
+            # TCU = 0
+            # for i in taken_courses:
+            #     TCU += int(i.course.courseUnit)
+            # cgpa = (first_sem_gpas + sec_sem_gpas) / 2
+            p = 0
+            point = 0
             TCU = 0
             for i in taken_courses:
                 TCU += int(i.course.courseUnit)
-            cgpa = first_sem_gpa + sec_sem_gpa / TCU
-
-            return round(cgpa, 2)
+                courseUnit = i.course.courseUnit
+                if i.grade == A:
+                    point = 5
+                elif i.grade == B:
+                    point = 4
+                elif i.grade == C:
+                    point = 3
+                elif i.grade == D:
+                    point = 2
+                else:
+                    point = 0
+                p += int(courseUnit) * point
+            try:
+                cgpa = (p / TCU)
+                return round(cgpa, 2)
+            except ZeroDivisionError:
+                return 0
 
 
 class CourseAllocation(models.Model):
