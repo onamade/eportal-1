@@ -1,4 +1,5 @@
 # JetBrains PyCharm settings
+.vscode/
 .idea/
 .idea
 __pycache__/*
