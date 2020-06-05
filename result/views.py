@@ -8,11 +8,12 @@ from .models import User, Student, Course, CourseAllocation, TakenCourse, \
     Session, Semester, CarryOverStudent, RepeatingStudent
 from django.views.generic import CreateView, UpdateView, DeleteView
 from django.utils.decorators import method_decorator
-from django.contrib.auth import update_session_auth_hash, authenticate
+from django.contrib.auth import update_session_auth_hash, authenticate, get_user_model
 from django.contrib.auth.forms import PasswordChangeForm
 from django.urls import reverse_lazy
 from django.http import HttpResponseRedirect
 from django.contrib import messages
+import csv, io
 # pdf
 from django.core.files.storage import FileSystemStorage
 from django.http import HttpResponse, JsonResponse
@@ -24,13 +25,13 @@ from reportlab.lib.enums import TA_JUSTIFY, TA_LEFT, TA_CENTER, TA_RIGHT
 from reportlab.platypus.tables import Table
 from reportlab.lib.units import inch
 from reportlab.lib import colors
-cm = 2.54
-
 # pdf with WeasyPrint required imports
 from django.conf import settings
 from django.http import HttpResponse
 from django.template.loader import render_to_string
 import weasyprint
+from django.contrib.auth.hashers import make_password
+cm = 2.54
 
 
 def register(request):
@@ -40,18 +41,15 @@ def register(request):
             # Create a new user object but avoid saving it yet
             new_user = user_form.save(commit=False)
             # Set the choosen password
-            new_user.set_password(
-                user_form.cleaned_data['password'])
+            new_user.set_password(user_form.cleaned_data['password'])
             # Save the User object
             new_user.save()
 
-            return render(request,
-                          'account/register_done.html',
+            return render(request, 'account/register_done.html',
                           {'new_user': new_user})
     else:
         user_form = UserRegistrationForm()
-    return render(request, 'account/register.html',
-                  {'user_form': user_form})
+    return render(request, 'account/register.html', {'user_form': user_form})
 
 
 @login_required
@@ -76,6 +74,7 @@ def home(request):
         "no_of_1st_class_students": no_of_1st_class_students,
         "no_of_students_to_repeat": no_of_students_to_repeat,
         "no_of_carry_over_students": no_of_carry_over_students,
+        current_semester: current_semester,
     }
 
     return render(request, 'result/home.html', context)
@@ -89,7 +88,7 @@ def get_chart(request, *args, **kwargs):
     for i in levels:
         # gather all the courses registered by the students of the current
         # level in the loop
-        all_query_score += (TakenCourse.objects.filter(student__level=i),)
+        all_query_score += (TakenCourse.objects.filter(student__level=i), )
 
     # for level #100
     first_level_total = 0
@@ -137,9 +136,10 @@ def get_chart(request, *args, **kwargs):
         fifth_level_avg = fifth_level_total / all_query_score[4].count()
 
     labels = ["100 Level", "200 Level", "300 Level", "400 Level", "500 Level"]
-    default_level_average = [first_level_avg, second_level_avg,
-                             third_level_avg, fourth_level_avg,
-                             fifth_level_avg]
+    default_level_average = [
+        first_level_avg, second_level_avg, third_level_avg, fourth_level_avg,
+        fifth_level_avg
+    ]
     average_data = {
         "labels": labels,
         "default_level_average": default_level_average,
@@ -153,12 +153,15 @@ def profile(request):
     current_semester = Semester.objects.get(is_current_semester=True)
     if request.user.is_lecturer:
         courses = Course.objects.filter(
-            allocated_course__lecturer__pk=request.user.id).filter(semester=current_semester)
-        return render(request, 'account/profile.html', {"courses": courses, })
+            allocated_course__lecturer__pk=request.user.id).filter(
+                semester=current_semester)
+        return render(request, 'account/profile.html', {
+            "courses": courses,
+        })
     elif request.user.is_student:
         level = Student.objects.get(user__pk=request.user.id)
-        courses = TakenCourse.objects.filter(
-            student__user__id=request.user.id, course__level=level.level)
+        courses = TakenCourse.objects.filter(student__user__id=request.user.id,
+                                             course__level=level.level)
         context = {
             'courses': courses,
             'level': level,
@@ -179,7 +182,8 @@ def user_profile(request, id):
     user = User.objects.get(pk=id)
     if user.is_lecturer:
         courses = Course.objects.filter(
-            allocated_course__lecturer__pk=id).filter(semester=current_semester)
+            allocated_course__lecturer__pk=id).filter(
+                semester=current_semester)
         context = {
             "user": user,
             "courses": courses,
@@ -187,8 +191,8 @@ def user_profile(request, id):
         return render(request, 'account/user_profile.html', context)
     elif user.is_student:
         level = Student.objects.get(user__pk=id)
-        courses = TakenCourse.objects.filter(
-            student__user__id=id, course__level=level.level)
+        courses = TakenCourse.objects.filter(student__user__id=id,
+                                             course__level=level.level)
         context = {
             "user_type": "student",
             'courses': courses,
@@ -197,10 +201,7 @@ def user_profile(request, id):
         }
         return render(request, 'account/user_profile.html', context)
     else:
-        context = {
-            "user": user,
-            "user_type": "superuser"
-        }
+        context = {"user": user, "user_type": "superuser"}
         return render(request, 'account/user_profile.html', context)
 
 
@@ -223,13 +224,14 @@ def profile_update(request):
             messages.success(request, 'Your profile was successfully edited.')
             return redirect("/profile/")
     else:
-        form = ProfileForm(instance=user, initial={
-            'firstname': user.first_name,
-            'lastname': user.last_name,
-            'email': user.email,
-            'phone': user.phone,
-            'picture': user.picture,
-        })
+        form = ProfileForm(instance=user,
+                           initial={
+                               'firstname': user.first_name,
+                               'lastname': user.last_name,
+                               'email': user.email,
+                               'phone': user.phone,
+                               'picture': user.picture,
+                           })
 
     return render(request, 'account/profile_update.html', {'form': form})
 
@@ -276,7 +278,9 @@ def staff_list(request):
 def session_list_view(request):
     """ Show list of all sessions """
     sessions = Session.objects.all().order_by('-session')
-    return render(request, 'result/manage_session.html', {"sessions": sessions, })
+    return render(request, 'result/manage_session.html', {
+        "sessions": sessions,
+    })
 
 
 @login_required
@@ -336,7 +340,9 @@ def session_delete_view(request, pk):
 @lecturer_required
 def semester_list_view(request):
     semesters = Semester.objects.all().order_by('-semester')
-    return render(request, 'result/manage_semester.html', {"semesters": semesters, })
+    return render(request, 'result/manage_semester.html', {
+        "semesters": semesters,
+    })
 
 
 @login_required
@@ -353,8 +359,9 @@ def semester_add_view(request):
                 session = Session.objects.get(pk=ss)
                 try:
                     if Semester.objects.get(semester=semester, session=ss):
-                        messages.info(request, semester + " semester in " +
-                                      session.session + " session already exist")
+                        messages.info(
+                            request, semester + " semester in " +
+                            session.session + " session already exist")
                         return redirect('create_new_semester')
                 except:
                     semester = Semester.objects.get(is_current_semester=True)
@@ -452,19 +459,65 @@ def delete_staff(request, pk):
     return redirect('staff_list')
 
 
-@method_decorator([login_required, lecturer_required], name='dispatch')
-class StudentAddView(CreateView):
-    model = User
-    form_class = StudentAddForm
-    template_name = 'registration/add_student.html'
+# @method_decorator([login_required, lecturer_required], name='dispatch')
+# class StudentAddView(CreateView):
+#     model = User
+#     form_class = StudentAddForm
+#     template_name = 'registration/add_student.html'
 
-    def get_context_data(self, **kwargs):
-        kwargs['user_type'] = 'student'
-        return super().get_context_data(**kwargs)
+#     def get_context_data(self, **kwargs):
+#         kwargs['user_type'] = 'student'
+#         return super().get_context_data(**kwargs)
 
-    def form_valid(self, form):
-        user = form.save()
-        return redirect('student_list')
+
+#     def form_valid(self, form):
+#         user = form.save()
+#         return redirect('student_list')
+@login_required
+def StudentAddView(request):
+    """A function that add users details to the database from a CSV file
+
+    Args:
+        request ([type]): [description]
+    """
+    template = "registration/add_student.html"
+    Users = get_user_model()
+
+    # setup a stream which is when we loop through each line we are
+    # to handle a data in a stream
+    prompt = {'order': 'Just upload the csv file for now'}
+    if request.method == "GET":
+        return render(request, template, prompt)
+    csv_file = request.FILES['file']
+
+    # is it really a csv file??
+    if not csv_file.name.endswith('.csv'):
+        messages.error(request, "This is not a CSV file")
+
+    data_set = csv_file.read().decode('UTF-8')
+    # setup a stream which is when we loop through each line we are
+    # to handle a data in a stream
+    io_string = io.StringIO(data_set)
+    next(io_string)
+    for column in csv.reader(io_string, delimiter=',', quotechar="|"):
+        _, created = Users.objects.update_or_create(
+            password=make_password(column[0]),
+            last_login="2020-05-01 05:51:42.521991",
+            is_superuser="0",
+            username=column[1],
+            first_name=column[2],
+            last_name=column[3],
+            is_staff="0",
+            is_active="1",
+            date_joined="2020-05-01 05:51:42",
+            is_student="1",
+            is_lecturer="0",
+            phone=column[4],
+            address=column[5],
+            picture=None,
+            email=column[6])
+    context = {}
+    return render(request, template, context)
 
 
 @login_required
@@ -531,7 +584,7 @@ class CourseAllocationView(CreateView):
         selected_courses = form.cleaned_data['courses']
         courses = ()
         for course in selected_courses:
-            courses += (course.pk,)
+            courses += (course.pk, )
         print(courses)
 
         try:
@@ -552,7 +605,7 @@ def course_registration(request):
         data = request.POST.copy()
         data.pop('csrfmiddlewaretoken', None)  # remove csrf_token
         for key in data.keys():
-            ids = ids + (str(key),)
+            ids = ids + (str(key), )
         for s in range(0, len(ids)):
             student = Student.objects.get(user__pk=request.user.id)
             course = Course.objects.get(pk=ids[s])
@@ -566,7 +619,7 @@ def course_registration(request):
             student__user__id=request.user.id)
         t = ()
         for i in taken_courses:
-            t += (i.course.pk,)
+            t += (i.course.pk, )
         current_semester = Semester.objects.get(is_current_semester=True)
         courses = Course.objects.filter(level=student.level).exclude(id__in=t)
         all_courses = Course.objects.filter(level=student.level)
@@ -574,9 +627,10 @@ def course_registration(request):
         no_course_is_registered = False  # Check if no course is registered
         all_courses_are_registered = False
 
-        registered_courses = Course.objects.filter(
-            level=student.level).filter(id__in=t)
-        if registered_courses.count() == 0:  # Check if number of registered courses is 0
+        registered_courses = Course.objects.filter(level=student.level).filter(
+            id__in=t)
+        if registered_courses.count(
+        ) == 0:  # Check if number of registered courses is 0
             no_course_is_registered = True
 
         if registered_courses.count() == all_courses.count():
@@ -614,7 +668,7 @@ def course_drop(request):
         data = request.POST.copy()
         data.pop('csrfmiddlewaretoken', None)  # remove csrf_token
         for key in data.keys():
-            ids = ids + (str(key),)
+            ids = ids + (str(key), )
         for s in range(0, len(ids)):
             student = Student.objects.get(user__pk=request.user.id)
             course = Course.objects.get(pk=ids[s])
@@ -642,12 +696,15 @@ def add_score(request):
 
     """
     current_session = Session.objects.get(is_current_session=True)
-    current_semester = get_object_or_404(
-        Semester, is_current_semester=True, session=current_session)
+    current_semester = get_object_or_404(Semester,
+                                         is_current_semester=True,
+                                         session=current_session)
     semester = Course.objects.filter(
-        allocated_course__lecturer__pk=request.user.id, semester=current_semester)
+        allocated_course__lecturer__pk=request.user.id,
+        semester=current_semester)
     courses = Course.objects.filter(
-        allocated_course__lecturer__pk=request.user.id).filter(semester=current_semester)
+        allocated_course__lecturer__pk=request.user.id).filter(
+            semester=current_semester)
     context = {
         "courses": courses,
     }
@@ -657,17 +714,18 @@ def add_score(request):
 @login_required
 @lecturer_required
 def add_score_for(request, id):
-    """
-    Shows a page where a lecturer will add score for studens that are taking courses allocated to him
+    """Shows a page where a lecturer will add score for studens that are taking courses allocated to him
     in a specific semester and session
     """
     current_semester = Semester.objects.get(is_current_semester=True)
     if request.method == 'GET':
         courses = Course.objects.filter(
-            allocated_course__lecturer__pk=request.user.id).filter(semester=current_semester)
+            allocated_course__lecturer__pk=request.user.id).filter(
+                semester=current_semester)
         course = Course.objects.get(pk=id)
-        students = TakenCourse.objects.filter(course__allocated_course__lecturer__pk=request.user.id).filter(
-            course__id=id).filter(course__semester=current_semester)
+        students = TakenCourse.objects.filter(
+            course__allocated_course__lecturer__pk=request.user.id).filter(
+                course__id=id).filter(course__semester=current_semester)
         context = {
             "courses": courses,
             "course": course,
@@ -681,11 +739,14 @@ def add_score_for(request, id):
         data.pop('csrfmiddlewaretoken', None)  # remove csrf_token
         for key in data.keys():
             # gather all the all students id (i.e the keys) in a tuple
-            ids = ids + (str(key),)
-        for s in range(0, len(ids)):      # iterate over the list of student ids gathered above
+            ids = ids + (str(key), )
+        for s in range(0, len(
+                ids)):  # iterate over the list of student ids gathered above
             student = TakenCourse.objects.get(id=ids[s])
-            courses = Course.objects.filter(level=student.student.level).filter(
-                semester=current_semester)  # all courses of a specific level in current semester
+            courses = Course.objects.filter(
+                level=student.student.level).filter(
+                    semester=current_semester
+                )  # all courses of a specific level in current semester
             total_unit_in_semester = 0
             for i in courses:
                 if i == courses.count():
@@ -696,7 +757,7 @@ def add_score_for(request, id):
             score = data.getlist(ids[s])
             # subscript the list to get the fisrt value > ca score
             ca = score[0]
-            exam = score[1]              # do thesame for exam score
+            exam = score[1]  # do thesame for exam score
             # get the current student data
             obj = TakenCourse.objects.get(pk=ids[s])
             obj.ca = ca  # set current student ca score
@@ -710,17 +771,22 @@ def add_score_for(request, id):
             gpa = obj.calculate_gpa(total_unit_in_semester)
             cgpa = obj.calculate_cgpa()
             try:
-                a = Result.objects.get(
-                    student=student.student, semester=current_semester, level=student.student.level)
+                a = Result.objects.get(student=student.student,
+                                       semester=current_semester,
+                                       level=student.student.level)
                 a.gpa = gpa
                 a.cgpa = cgpa
                 a.save()
             except:
-                Result.objects.get_or_create(
-                    student=student.student, gpa=gpa, semester=current_semester, level=student.student.level)
+                Result.objects.get_or_create(student=student.student,
+                                             gpa=gpa,
+                                             semester=current_semester,
+                                             level=student.student.level)
         messages.success(request, 'Successfully Recorded! ')
-        return HttpResponseRedirect(reverse_lazy('add_score_for', kwargs={'id': id}))
-    return HttpResponseRedirect(reverse_lazy('add_score_for', kwargs={'id': id}))
+        return HttpResponseRedirect(
+            reverse_lazy('add_score_for', kwargs={'id': id}))
+    return HttpResponseRedirect(
+        reverse_lazy('add_score_for', kwargs={'id': id}))
 
 
 @login_required
@@ -728,8 +794,8 @@ def add_score_for(request, id):
 def view_result(request):
     student = Student.objects.get(user__pk=request.user.id)
     current_semester = Semester.objects.get(is_current_semester=True)
-    courses = TakenCourse.objects.filter(
-        student__user__pk=request.user.id, course__level=student.level)
+    courses = TakenCourse.objects.filter(student__user__pk=request.user.id,
+                                         course__level=student.level)
     result = Result.objects.filter(student__user__pk=request.user.id)
     current_semester_grades = {}
 
@@ -738,7 +804,7 @@ def view_result(request):
     currentCGPA = 0
     # TODO : implement previousCGPA funtionality later
     # for i in result:
-    #     if not int(i.level) - 100 == 0:  # TODO think n check the logic : no pre for 100l
+    #     if not int(i.level) - 100 == 0: # TODO think n check the logic : no pre for 100l
     #         previousLEVEL = int(i.level) - 100
     #         try:
     #             a = Result.objects.get(
@@ -748,11 +814,12 @@ def view_result(request):
     #         except:
     #             previousCGPA = 0
     try:
-        a = Result.objects.get(
-            student__user__pk=request.user.id, level=student.level, semester="Second")
-        currentCGPA = a.cgpa
+        a = Result.objects.get(student__user__pk=request.user.id,
+                               level=student.level,
+                               semester="Second")
+        current_CGPA = a.cgpa
     except:
-        currentCGPA = 0
+        current_CGPA = 0
         # else:
         #     a = Result.objects.get(
         #             student__user__pk=request.user.id, level=i.level, semester="Second")
@@ -762,7 +829,7 @@ def view_result(request):
         "result": result,
         "student": student,
         "previousCGPA": previousCGPA,
-        "currentCGPA": currentCGPA,
+        "currentCGPA": current_CGPA,
     }
 
     return render(request, 'students/view_results.html', context)
@@ -775,8 +842,8 @@ def change_password(request):
         if form.is_valid():
             user = form.save()
             update_session_auth_hash(request, user)
-            messages.success(
-                request, 'Your password was successfully updated!')
+            messages.success(request,
+                             'Your password was successfully updated!')
         else:
             messages.error(request, 'Please correct the errors below. ')
     else:
@@ -790,7 +857,8 @@ def change_password(request):
 @lecturer_required
 def course_allocation_view(request):
     allocated_courses = CourseAllocation.objects.all()
-    return render(request, 'course/course_allocation_view.html', {"allocated_courses": allocated_courses})
+    return render(request, 'course/course_allocation_view.html',
+                  {"allocated_courses": allocated_courses})
 
 
 @login_required
@@ -809,11 +877,11 @@ def carry_over(request):
         data = request.POST.copy()
         data.pop('csrfmiddlewaretoken', None)  # remove csrf_token
         for val in data.values():
-            value += (val,)
+            value += (val, )
         course = value[0]
         session = value[1]
-        courses = CarryOverStudent.objects.filter(
-            course__courseCode=course, session=session)
+        courses = CarryOverStudent.objects.filter(course__courseCode=course,
+                                                  session=session)
         all_courses = Course.objects.all()
         sessions = Session.objects.all()
         signal_template = True
@@ -827,7 +895,10 @@ def carry_over(request):
     else:
         all_courses = Course.objects.all()
         sessions = Session.objects.all()
-        return render(request, 'course/carry_over.html',  {"all_courses": all_courses, "sessions": sessions})
+        return render(request, 'course/carry_over.html', {
+            "all_courses": all_courses,
+            "sessions": sessions
+        })
 
 
 @login_required
@@ -839,7 +910,8 @@ def repeat_list(request):
 @login_required
 def first_class_list(request):
     students = Result.objects.filter(cgpa__gte=4.5)
-    return render(request, 'students/first_class_students.html', {"students": students})
+    return render(request, 'students/first_class_students.html',
+                  {"students": students})
 
 
 @login_required
@@ -848,26 +920,31 @@ def result_sheet_pdf_view(request, id):
     current_semester = Semester.objects.get(is_current_semester=True)
     current_session = Session.objects.get(is_current_session=True)
     result = TakenCourse.objects.filter(course__pk=id)
-    no_of_pass = TakenCourse.objects.filter(
-        course__pk=id, comment="PASS").count()
-    no_of_fail = TakenCourse.objects.filter(
-        course__pk=id, comment="FAIL").count()
+    no_of_pass = TakenCourse.objects.filter(course__pk=id,
+                                            comment="PASS").count()
+    no_of_fail = TakenCourse.objects.filter(course__pk=id,
+                                            comment="FAIL").count()
     fname = str(current_semester) + '_semester_' + \
         str(current_session) + '_session_' + 'resultSheet.pdf'
     fname = fname.replace("/", "-")
-    flocation = '/tmp/'+fname
+    flocation = '/tmp/' + fname
 
-    doc = SimpleDocTemplate(flocation, rightMargin=0,
-                            leftMargin=6.5 * cm, topMargin=0.3 * cm, bottomMargin=0)
+    doc = SimpleDocTemplate(flocation,
+                            rightMargin=0,
+                            leftMargin=6.5 * cm,
+                            topMargin=0.3 * cm,
+                            bottomMargin=0)
     styles = getSampleStyleSheet()
-    styles.add(ParagraphStyle(name="ParagraphTitle",
-                              fontSize=11, fontName="FreeSansBold"))
+    styles.add(
+        ParagraphStyle(name="ParagraphTitle",
+                       fontSize=11,
+                       fontName="FreeSansBold"))
     Story = [Spacer(1, .2)]
     style = styles["Normal"]
 
     logo = MEDIA_ROOT + "/logo/android-chrome-144x144.png"
     print(logo)
-    im = Image(logo, 1*inch, 1*inch)
+    im = Image(logo, 1 * inch, 1 * inch)
     im.__setattr__("_offs_x", -280)
     im.__setattr__("_offs_y", -45)
     Story.append(im)
@@ -882,7 +959,7 @@ def result_sheet_pdf_view(request, id):
         str(current_session) + " Result Sheet</b>"
     title = Paragraph(title.upper(), normal)
     Story.append(title)
-    Story.append(Spacer(1, 0.1*inch))
+    Story.append(Spacer(1, 0.1 * inch))
 
     style = getSampleStyleSheet()
     normal = style["Normal"]
@@ -893,7 +970,7 @@ def result_sheet_pdf_view(request, id):
     title = "<b>Course lecturer: " + request.user.get_full_name() + "</b>"
     title = Paragraph(title.upper(), normal)
     Story.append(title)
-    Story.append(Spacer(1, 0.1*inch))
+    Story.append(Spacer(1, 0.1 * inch))
 
     normal = style["Normal"]
     normal.alignment = TA_CENTER
@@ -901,15 +978,15 @@ def result_sheet_pdf_view(request, id):
     normal.fontSize = 10
     normal.leading = 15
     level = result.filter(course_id=id).first()
-    title = "<b>Level: </b>" + str(level.course.level+"L")
+    title = "<b>Level: </b>" + str(level.course.level + "L")
     title = Paragraph(title.upper(), normal)
     Story.append(title)
-    Story.append(Spacer(1, .6*inch))
+    Story.append(Spacer(1, .6 * inch))
 
     elements = []
     count = 0
     header = [('S/N', 'ID NUMBER', 'CA', 'EXAM', 'GRADE', 'COMMENT')]
-    table_header = Table(header, 1*[1.2*inch], 1*[0.5*inch])
+    table_header = Table(header, 1 * [1.2 * inch], 1 * [0.5 * inch])
     table_header.setStyle(
         TableStyle([
             ('ALIGN', (-2, -2), (-2, -2), 'CENTER'),
@@ -923,13 +1000,13 @@ def result_sheet_pdf_view(request, id):
         ]))
     Story.append(table_header)
     for student in result:
-        data = [(count+1, student.student.id_number.upper(),
-                 student.ca, student.exam, student.grade, student.comment)]
+        data = [(count + 1, student.student.id_number.upper(), student.ca,
+                 student.exam, student.grade, student.comment)]
         color = colors.black
         if student.grade == 'F':
             color = colors.red
         count += 1
-        t = Table(data, 1*[1.2*inch], 1*[0.5*inch])
+        t = Table(data, 1 * [1.2 * inch], 1 * [0.5 * inch])
         t.setStyle(
             TableStyle([
                 ('ALIGN', (-2, -2), (-2, -2), 'CENTER'),
@@ -944,13 +1021,23 @@ def result_sheet_pdf_view(request, id):
             ]))
         Story.append(t)
 
-    Story.append(Spacer(1, 1*inch))
-    style_right = ParagraphStyle(
-        name='right', parent=styles['Normal'], alignment=TA_RIGHT)
+    Story.append(Spacer(1, 1 * inch))
+    style_right = ParagraphStyle(name='right',
+                                 parent=styles['Normal'],
+                                 alignment=TA_RIGHT)
     tbl_data = [
-        [Paragraph("<b>Date:</b>_______________________________________", styles["Normal"]),
-         Paragraph("<b>No. of PASS:</b> " + str(no_of_pass), style_right)],
-        [Paragraph("<b>Siganture / Stamp:</b> _____________________________", styles["Normal"]), Paragraph("<b>No. of FAIL: </b>" + str(no_of_fail), style_right)]]
+        [
+            Paragraph("<b>Date:</b>_______________________________________",
+                      styles["Normal"]),
+            Paragraph("<b>No. of PASS:</b> " + str(no_of_pass), style_right)
+        ],
+        [
+            Paragraph(
+                "<b>Siganture / Stamp:</b> _____________________________",
+                styles["Normal"]),
+            Paragraph("<b>No. of FAIL: </b>" + str(no_of_fail), style_right)
+        ]
+    ]
     tbl = Table(tbl_data)
     Story.append(tbl)
 
@@ -959,7 +1046,7 @@ def result_sheet_pdf_view(request, id):
     fs = FileSystemStorage("/tmp")
     with fs.open(fname) as pdf:
         response = HttpResponse(pdf, content_type='application/pdf')
-        response['Content-Disposition'] = 'inline; filename='+fname+''
+        response['Content-Disposition'] = 'inline; filename=' + fname + ''
         return response
     return response
 
@@ -972,13 +1059,16 @@ def course_registration_form(request):
     courses = TakenCourse.objects.filter(student__user__id=request.user.id)
     fname = request.user.username + '.pdf'
     fname = fname.replace("/", "-")
-    flocation = '/tmp/'+fname
-    doc = SimpleDocTemplate(flocation, rightMargin=15,
-                            leftMargin=15, topMargin=0, bottomMargin=0)
+    flocation = '/tmp/' + fname
+    doc = SimpleDocTemplate(flocation,
+                            rightMargin=15,
+                            leftMargin=15,
+                            topMargin=0,
+                            bottomMargin=0)
     styles = getSampleStyleSheet()
 
     Story = [Spacer(1, 0.5)]
-    Story.append(Spacer(1, 0.4*inch))
+    Story.append(Spacer(1, 0.4 * inch))
     style = styles["Normal"]
 
     style = getSampleStyleSheet()
@@ -1002,7 +1092,7 @@ def course_registration_form(request):
     Story.append(school_title)
 
     style = getSampleStyleSheet()
-    Story.append(Spacer(1, 0.1*inch))
+    Story.append(Spacer(1, 0.1 * inch))
     department = style["Normal"]
     department.alignment = TA_CENTER
     department.fontName = "Helvetica"
@@ -1011,7 +1101,7 @@ def course_registration_form(request):
     department_title = "<b>DEPARTMENT OF INFORMATION MANAGEMENT TECHNOLOGY</b>"
     department_title = Paragraph(department_title, department)
     Story.append(department_title)
-    Story.append(Spacer(1, .3*inch))
+    Story.append(Spacer(1, .3 * inch))
 
     title = "<b><u>STUDENT REGISTRATION FORM</u></b>"
     title = Paragraph(title.upper(), normal)
@@ -1020,15 +1110,26 @@ def course_registration_form(request):
 
     style_right = ParagraphStyle(name='right', parent=styles['Normal'])
     tbl_data = [
-        [Paragraph("<b>Registration Number : " +
-                   request.user.username.upper() + "</b>", styles["Normal"])],
-        [Paragraph("<b>Name : " + request.user.get_full_name().upper() +
-                   "</b>", styles["Normal"])],
-        [Paragraph("<b>Session : " + current_session.session.upper() + "</b>", styles["Normal"]), Paragraph("<b>Level: " + student.level + "</b>", styles["Normal"])
-         ]]
+        [
+            Paragraph(
+                "<b>Registration Number : " + request.user.username.upper() +
+                "</b>", styles["Normal"])
+        ],
+        [
+            Paragraph(
+                "<b>Name : " + request.user.get_full_name().upper() + "</b>",
+                styles["Normal"])
+        ],
+        [
+            Paragraph(
+                "<b>Session : " + current_session.session.upper() + "</b>",
+                styles["Normal"]),
+            Paragraph("<b>Level: " + student.level + "</b>", styles["Normal"])
+        ]
+    ]
     tbl = Table(tbl_data)
     Story.append(tbl)
-    Story.append(Spacer(1, 0.6*inch))
+    Story.append(Spacer(1, 0.6 * inch))
 
     style = getSampleStyleSheet()
     semester = style["Normal"]
@@ -1045,8 +1146,9 @@ def course_registration_form(request):
     # FIRST SEMESTER
     count = 0
     header = [('S/No', 'Course Code', 'Course Title', 'Unit',
-               Paragraph('Name, Siganture of course lecturer & Date', style['Normal']))]
-    table_header = Table(header, 1*[1.4*inch], 1*[0.5*inch])
+               Paragraph('Name, Siganture of course lecturer & Date',
+                         style['Normal']))]
+    table_header = Table(header, 1 * [1.4 * inch], 1 * [0.5 * inch])
     table_header.setStyle(
         TableStyle([
             ('ALIGN', (-2, -2), (-2, -2), 'CENTER'),
@@ -1069,11 +1171,11 @@ def course_registration_form(request):
     for course in courses:
         if course.course.semester == FIRST:
             first_semester_unit += int(course.course.courseUnit)
-            data = [(count+1, course.course.courseCode.upper(),
+            data = [(count + 1, course.course.courseCode.upper(),
                      course.course.courseTitle, course.course.courseUnit, '')]
             color = colors.black
             count += 1
-            table_body = Table(data, 1*[1.4*inch], 1*[0.3*inch])
+            table_body = Table(data, 1 * [1.4 * inch], 1 * [0.3 * inch])
             table_body.setStyle(
                 TableStyle([
                     ('ALIGN', (-2, -2), (-2, -2), 'CENTER'),
@@ -1097,7 +1199,7 @@ def course_registration_form(request):
     Story.append(semester_title)
 
     # FIRST SEMESTER ENDS HERE
-    Story.append(Spacer(1, 0.6*inch))
+    Story.append(Spacer(1, 0.6 * inch))
 
     style = getSampleStyleSheet()
     semester = style["Normal"]
@@ -1111,8 +1213,9 @@ def course_registration_form(request):
     # SECOND SEMESTER
     count = 0
     header = [('S/No', 'Course Code', 'Course Title', 'Unit',
-               Paragraph('<b>Name, Siganture of course lecturer & Date</b>', style['Normal']))]
-    table_header = Table(header, 1*[1.4*inch], 1*[0.5*inch])
+               Paragraph('<b>Name, Siganture of course lecturer & Date</b>',
+                         style['Normal']))]
+    table_header = Table(header, 1 * [1.4 * inch], 1 * [0.5 * inch])
     table_header.setStyle(
         TableStyle([
             ('ALIGN', (-2, -2), (-2, -2), 'CENTER'),
@@ -1135,11 +1238,11 @@ def course_registration_form(request):
     for course in courses:
         if course.course.semester == SECOND:
             second_semester_unit += int(course.course.courseUnit)
-            data = [(count+1, course.course.courseCode.upper(),
+            data = [(count + 1, course.course.courseCode.upper(),
                      course.course.courseTitle, course.course.courseUnit, '')]
             color = colors.black
             count += 1
-            table_body = Table(data, 1*[1.4*inch], 1*[0.3*inch])
+            table_body = Table(data, 1 * [1.4 * inch], 1 * [0.3 * inch])
             table_body.setStyle(
                 TableStyle([
                     ('ALIGN', (-2, -2), (-2, -2), 'CENTER'),
@@ -1170,22 +1273,24 @@ def course_registration_form(request):
     certification.fontSize = 8
     certification.leading = 18
     student = Student.objects.get(user__pk=request.user.id)
-    certification_text = "CERTIFICATION OF REGISTRATION: I certify that <b>" + str(request.user.get_full_name().upper()) + "</b>\
+    certification_text = "CERTIFICATION OF REGISTRATION: I certify that <b>" + str(
+        request.user.get_full_name().upper()) + "</b>\
     has been duly registered for the <b>" + student.level + " level </b> of study in the department\
     of INFORMATION MANAGEMENT TECHNOLOGY and that the courses and units registered are as approved by the senate of the University"
+
     certification_text = Paragraph(certification_text, certification)
     Story.append(certification_text)
 
     # FIRST SEMESTER ENDS HERE
 
     logo = MEDIA_ROOT + "/logo/android-chrome-144x144.png"
-    im = Image(logo, 1.5*inch, 1.5*inch)
+    im = Image(logo, 1.5 * inch, 1.5 * inch)
     im.__setattr__("_offs_x", -228)
     im.__setattr__("_offs_y", 625)
     Story.append(im)
 
     picture = BASE_DIR + request.user.get_picture()
-    im = Image(picture, 1.0*inch, 1.0*inch)
+    im = Image(picture, 1.0 * inch, 1.0 * inch)
     im.__setattr__("_offs_x", 218)
     im.__setattr__("_offs_y", 625)
     Story.append(im)
@@ -1193,9 +1298,10 @@ def course_registration_form(request):
     fs = FileSystemStorage("/tmp")
     with fs.open(fname) as pdf:
         response = HttpResponse(pdf, content_type='application/pdf')
-        response['Content-Disposition'] = 'inline; filename='+fname+''
+        response['Content-Disposition'] = 'inline; filename=' + fname + ''
         return response
     return responseall_courses_areegistered
+
 
 #View to handle WeasyPrint PDF for student Course Registration
 @login_required
@@ -1205,22 +1311,25 @@ def course_registration_pdf(request):
     # if request.method == 'GET':
     student = Student.objects.get(user__pk=request.user.id)
     taken_courses = TakenCourse.objects.filter(
-            student__user__id=request.user.id)
+        student__user__id=request.user.id)
     t = ()
     for i in taken_courses:
-        t += (i.course.pk,)
-        registered_courses = Course.objects.filter(
-            level=student.level).filter(id__in=t)
+        t += (i.course.pk, )
+        registered_courses = Course.objects.filter(level=student.level).filter(
+            id__in=t)
         total_registered_unit = 0
         for i in registered_courses:
             total_registered_unit += int(i.courseUnit)
-    html = render_to_string('course/pdf.html',
-                            {"student": student,
-                            "registered_courses": registered_courses,
-                            "total_registered_unit": total_registered_unit,})
+    html = render_to_string(
+        'course/pdf.html', {
+            "student": student,
+            "registered_courses": registered_courses,
+            "total_registered_unit": total_registered_unit,
+        })
     response = HttpResponse(content_type='application/pdf')
-    response['Content-Disposition'] = f'filname=student_{student.id_number}.pdf'
-    weasyprint.HTML(string=html).write_pdf(response,
-        stylesheets=[weasyprint.CSS(
-            settings.STATIC_ROOT + 'css/pdf.css')])
+    response[
+        'Content-Disposition'] = f'filname=student_{student.id_number}.pdf'
+    weasyprint.HTML(string=html).write_pdf(
+        response,
+        stylesheets=[weasyprint.CSS(settings.STATIC_ROOT + 'css/pdf.css')])
     return response

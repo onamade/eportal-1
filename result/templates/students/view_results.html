@@ -26,12 +26,24 @@ overflow-y: auto;
 </style>
 <center>{{ student.level }}L Result</center>
 <div class="table-wrapper-scroll-y">
+  {% comment %} {% if   %}
+    <div>
+      <a target="_blank" href="{% url 'course_registration_pdf' %}" class="view view-cascade gradient-card-header blue-gradient narrower py-2 mx-4 mb-3 d-flex justify-content-center align-items-center btn btn-outline-white btn-rounded btn-sm px-2">
+        <i class="fa fa-file-pdf-o" aria-hidden="true"></i> Print Result
+      </a>
+    </div>
+  {% endif %} {% endcomment %}
+  
   <table class="table table-bordered table-striped">
     <thead>
       <tr>
         <th scope="col">#</th>
         <th scope="col">Course Title</th>
         <th scope="col">Course Code</th>
+        <th scope="col">CA</th>
+        <th scope="col">Exam Score</th>
+        <th scope="col"> Total Score</th>
+        <th scope="col">Course Unit</th>
         <th scope="col">GRADE</th>
       </tr>
     </thead>
@@ -43,6 +55,10 @@ overflow-y: auto;
         <th scope="row">{{ forloop.counter }}</th>
         <td>{{ course.course.courseTitle }}</td>
         <td>{{ course.course.courseCode }}</td>
+        <td>{{ course.ca }}</td>
+        <td>{{ course.exam }}</td>
+        <td>{{ course.total }}</td>
+        <td>{{ course.course.courseUnit }}</td>
         <td>{{ course.grade }}</td>
       </tr>
     </tbody>
@@ -56,6 +72,10 @@ overflow-y: auto;
         <th scope="col">#</th>
         <th scope="col">Course Title</th>
         <th scope="col">Course Code</th>
+        <th scope="col">CA</th>
+        <th scope="col">Exam Score</th>
+        <th scope="col"> Total Score</th>
+        <th scope="col">Course Unit</th>
         <th scope="col">GRADE</th>
       </tr>
     </thead>
@@ -65,8 +85,12 @@ overflow-y: auto;
     <tbody>
       <tr>
         <th scope="row">{{ forloop.counter }}</th>
-        <td>{{ course.course.courseTitle }}</td>
+         <td>{{ course.course.courseTitle }}</td>
         <td>{{ course.course.courseCode }}</td>
+        <td>{{ course.ca }}</td>
+        <td>{{ course.exam }}</td>
+        <td>{{ course.total }}</td>
+        <td>{{ course.course.courseUnit }}</td>
         <td>{{ course.grade }}</td>
       </tr>
     </tbody>

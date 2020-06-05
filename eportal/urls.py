@@ -13,7 +13,7 @@ urlpatterns = [
     path('accounts/', include('django.contrib.auth.urls')),
     path('accounts/login/', views.LoginView.as_view(), name='login'),
     path('accounts/logout/', views.LogoutView.as_view(), name='logout', kwargs={'next_page': '/'}),
-	path('register/student/', result_view.StudentAddView.as_view(), name='student_signup'),
+	# path('register/student/', result_view.StudentAddView.as_view(), name='student_signup'),
 ]
 
 urlpatterns += staticfiles_urlpatterns()
