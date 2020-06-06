@@ -34,11 +34,13 @@
 
                     <h6 class="mb-2 mb-sm-0 pt-1">
                         <a href="/">Home Page</a>
-                        <span>/</span>
-                        <span>Allocated Courses</span>
+                        {% if request.user.is_superuser %}}
+                            <span>/</span>
+                            <span>Allocated Courses</span>
+                        {% endif %}
                     </h6>
                 </div>
-
+            {% if request.user.is_superuser %}}
             </div>
             <h6 class="mb-2 mb-sm-0 pt-1">
             <a class="pull-right btn btn-default btn-rounded mb-3" href="" class="btn btn-default btn-rounded mb-4">
@@ -55,9 +57,7 @@
                           <th scope="col">#</th>
                           <th scope="col">Lecturer</th>
                           <th scope="col">Courses</th>
-                          {% if request.user.is_superuser %}
                           <th scope="col">Action</th>
-                          {% endif %}
                         </tr>
                     </thead>
                 {% for course in allocated_courses %}
@@ -66,11 +66,9 @@
                           <th scope="row">{{ forloop.counter }}</th>
                           <td>{{ course.lecturer }}</td>
                           <td>{% for i in course.courses.all %}{{ i }},{% endfor %}</td>
-                          {% if request.user.is_superuser %}
                           <td>
                             <a data-toggle="tooltip" title="withheld" href="{% url 'withheld_course' pk=course.pk %}" class="red-text"><i class="fa fa-times"></i></a>
                           </td>
-                          {% endif %}
                         </tr>
                         {% empty %}
                         <tr>
@@ -95,4 +93,5 @@
             </div>
         </div>
         <br>
+        {% endif %}
 {% endblock %}

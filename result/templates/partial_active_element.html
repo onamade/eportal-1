@@ -13,19 +13,13 @@
         <i class="fa fa-users mr-3" aria-hidden="true"></i> Students</a>
         {% endif %}
 
-        {% if request.user.is_lecturer %}
-        <a href="{% url 'student_list' %}" class="list-group-item 
-        {% if active == 'students' %} active {% endif %} waves-effect">
-        <i class="fa fa-graduation-cap mr-3" aria-hidden="true"></i>View Students</a>
-    {% endif %}
-
     {% if request.user.is_superuser %}
     <a href="{% url 'staff_list' %}" class="list-group-item 
         {% if active == 'staff' %} active {% endif %} waves-effect">
         <i class="fa  fa-users mr-3" aria-hidden="true"></i> Staff</a>
         {% endif %}
 
-    {% if request.user.is_lecturer %}
+    {% if request.user.is_superuser %}
         <a href="{% url 'staff_list' %}" class="list-group-item 
         {% if active == 'staff' %} active {% endif %} waves-effect">
         <i class="fa  fa-users mr-3" aria-hidden="true"></i>View Staff</a>
@@ -35,11 +29,6 @@
     <a href="{% url 'course_list' %}" class="list-group-item 
         {% if active == 'course_list' %} active {% endif %} waves-effect">
         <i class="fa fa-book mr-3" aria-hidden="true"></i> Courses</a>
-
-    {% elif request.user.is_lecturer %}
-        <a href="{% url 'course_list' %}" class="list-group-item 
-        {% if active == 'course_list' %} active {% endif %} waves-effect">
-        <i class="fa fa-book mr-3" aria-hidden="true"></i>View Courses</a>
     {% endif %}
 
     {% if request.user.is_superuser %}
@@ -48,7 +37,7 @@
         <i class="fa fa-book mr-3" aria-hidden="true"></i>Course Allocation</a>
     {% endif %}
 
-    {% if request.user.is_superuser or request.user.is_lecturer %}
+    {% if request.user.is_superuser %}
     <a href="{% url 'course_allocation_view' %}" class="list-group-item 
         {% if active == 'course_allocation_view' %} active {% endif %} waves-effect">
         <i class="fa fa-book mr-3" aria-hidden="true"></i>Allocation List</a>

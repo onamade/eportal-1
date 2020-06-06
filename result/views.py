@@ -4,12 +4,14 @@ import io
 from eportal.settings import MEDIA_ROOT, BASE_DIR, STATIC_URL
 from django.shortcuts import get_object_or_404, redirect, render
 from django.contrib.auth.decorators import login_required
-from .decorators import lecturer_required, student_required
+from django.contrib.auth.decorators import user_passes_test
+from django.contrib.admin.views.decorators import staff_member_required
+from .decorators import lecturer_required, student_required, admin_required
 from .forms import StaffAddForm, StudentAddForm, CourseAddForm, \
     ChangePasswordForm, CourseAllocationForm, CourseRegitsrationForm, \
         ProfileForm, SessionForm, SemesterForm
 from .models import User, Student, Course, CourseAllocation, TakenCourse, \
-    Session, Semester, CarryOverStudent, RepeatingStudent
+    Session, Semester, CarryOverStudent, RepeatingStudent, Result
 from django.views.generic import CreateView, UpdateView, DeleteView
 from django.utils.decorators import method_decorator
 from django.contrib.auth import update_session_auth_hash, authenticate, get_user_model
@@ -24,7 +26,6 @@ from django.conf import settings
 from django.template.loader import render_to_string
 import weasyprint
 from django.contrib.auth.hashers import make_password
-cm = 2.54
 
 
 @login_required
@@ -905,8 +906,14 @@ def first_class_list(request):
 
 @login_required
 @lecturer_required
-def result_sheet_pdf_view(request, id):
-    pass # TODO: print result with weasyprint
+def result_sheet_pdf_view(request, id): # TODO: print result with weasyprint
+    """function to print result in pdf format
+
+    Args:
+        request ([type]): [description]
+        id ([type]): [description]
+    """
+    pass
 
 
 @login_required

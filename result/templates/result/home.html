@@ -119,7 +119,7 @@
             <!-- Heading -->
 
 
-
+            {% if request.user.is_superuser %}
             <!--Grid row-->
             <div class="row wow fadeIn">
 
@@ -129,7 +129,7 @@
                     <!--Card-->
 
                     <div class="card">
-                        <a href="{% if not request.user.is_student %}{% url 'student_list' %}{% else %} # {% endif %}">
+                        <a href="{% url 'student_list' %}">
                         <!-- Card header -->
                         <div class="card-header waves-effect">Student{{ no_of_students|pluralize }}</div>
 
@@ -154,7 +154,7 @@
 
                     <!--Card-->
                     <div class="card">
-                        <a href="{% if not request.user.is_student %}{% url 'staff_list' %}{% else %} # {% endif %}">
+                        <a href="{% url 'staff_list' %}">
                         <!-- Card header -->
                         <div class="card-header waves-effect">Staff{{ no_of_staff|pluralize }}</div>
 
@@ -177,7 +177,7 @@
 
                     <!--Card-->
                     <div class="card">
-                        <a href="{% if not request.user.is_student %}{% url 'course_list' %}{% else %} # {% endif %}">
+                        <a href="{% url 'course_list' %}">
                         <!-- Card header -->
                         <div  class="card-header waves-effect">
                         Course{{ no_of_courses|pluralize }}
@@ -206,7 +206,7 @@
                     <!--Card-->
 
                     <div class="card">
-                        <a href="{% if not request.user.is_student %}{% url 'repeat_list' %}{% else %} # {% endif %}">
+                        <a href="{% url 'repeat_list' %}">
                         <!-- Card header -->
                         <div class="card-header waves-effect">Repeating Student{{ no_of_students_to_repeat|pluralize }}</div>
 
@@ -228,7 +228,7 @@
                     <!--Card-->
 
                     <div class="card">
-                        <a href="{% if not request.user.is_student %}{% url 'carry_over' %}{% else %} # {% endif %}">
+                        <a href="{% url 'carry_over' %}">
                         <!-- Card header -->
                         <div class="card-header waves-effect">Carry over Student{{ no_of_carry_over_students|pluralize }}</div>
 
@@ -250,7 +250,7 @@
                     <!--Card-->
 
                     <div class="card">
-                        <a href="{% if not request.user.is_student %}{% url 'first_class_list' %}{% else %} # {% endif %}">
+                        <a href="{% url 'first_class_list' %}">
                         <!-- Card header -->
                         <div class="card-header waves-effect">1st Class Student{{ no_of_1st_class_students|pluralize }}</div>
 
@@ -268,4 +268,5 @@
 
                 </div>
             </div>
+            {% endif %}
 {% endblock %} }

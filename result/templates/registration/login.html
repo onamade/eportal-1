@@ -45,8 +45,6 @@
 				        <label for="materialLoginFormEmail">{{ field.html_name }}</label>
 				      </div>
 				      {% endfor %}
-							<p>If you don't have an account <a href="{% url "register" %}">register
-            here</a></p>
 				      <button class="btn btn-outline-info btn-rounded btn-block my-4 waves-effect z-depth-0" type="submit">Sign in</button>
 				      <input type="hidden" name="next" value="{{ next }}" />
 				    </form>

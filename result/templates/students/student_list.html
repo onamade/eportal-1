@@ -24,8 +24,10 @@ overflow-y: auto;
 
                     <h6 class="mb-2 mb-sm-0 pt-1">
                         <a href="/">Home Page</a>
-                        <span>/</span>
-                        <span>{{ user_type }}</span>
+                        {% if request.user.is_superuser %}
+                          <span>/</span>
+                          <span>{{ user_type }}</span>
+                        {% endif %}
                     </h6>
                 </div>
 
@@ -40,7 +42,6 @@ overflow-y: auto;
                <i class="fa fa-file-pdf-o" aria-hidden="true"></i> PDF
             </a>
             </h6>
-            {% endif %}
 
                 <!--Card content-->
   <div class="table-wrapper-scroll-y">
@@ -99,4 +100,5 @@ overflow-y: auto;
             </div>
         </div>
         <br>
+        {% endif %}
 {% endblock %}
