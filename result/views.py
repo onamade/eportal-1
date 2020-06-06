@@ -34,24 +34,6 @@ from django.contrib.auth.hashers import make_password
 cm = 2.54
 
 
-def register(request):
-    if request.method == 'POST':
-        user_form = UserRegistrationForm(request.POST)
-        if user_form.is_valid():
-            # Create a new user object but avoid saving it yet
-            new_user = user_form.save(commit=False)
-            # Set the choosen password
-            new_user.set_password(user_form.cleaned_data['password'])
-            # Save the User object
-            new_user.save()
-
-            return render(request, 'account/register_done.html',
-                          {'new_user': new_user})
-    else:
-        user_form = UserRegistrationForm()
-    return render(request, 'account/register.html', {'user_form': user_form})
-
-
 @login_required
 def home(request):
     """
@@ -431,17 +413,6 @@ def StaffAddView(request):
     Args:
         request ([type]): [description]
     """
-    # model = User
-    # form_class = StaffAddForm
-    # template_name = 'registration/add_staff.html'
-
-    # def get_context_data(self, **kwargs):
-    #     kwargs['user_type'] = 'staff'
-    #     return super().get_context_data(**kwargs)
-
-    # def form_valid(self, form):
-    #     user = form.save()
-    #     return redirect('staff_list')
     template = "registration/add_staff.html"
     Users = get_user_model()
 
@@ -457,7 +428,7 @@ def StaffAddView(request):
         messages.error(request, "This is not a CSV file")
 
     data_set = csv_file.read().decode('UTF-8')
-    # setup a stream which is when we loop through each line, 
+    # setup a stream which is when we loop through each line,
     # and handle each student data in the stream.
     io_string = io.StringIO(data_set)
     next(io_string)
@@ -504,20 +475,6 @@ def delete_staff(request, pk):
     return redirect('staff_list')
 
 
-# @method_decorator([login_required, lecturer_required], name='dispatch')
-# class StudentAddView(CreateView):
-#     model = User
-#     form_class = StudentAddForm
-#     template_name = 'registration/add_student.html'
-
-#     def get_context_data(self, **kwargs):
-#         kwargs['user_type'] = 'student'
-#         return super().get_context_data(**kwargs)
-
-
-#     def form_valid(self, form):
-#         user = form.save()
-#         return redirect('student_list')
 @login_required
 def StudentAddView(request):
     """A function that add users details to the database from a CSV file
@@ -537,35 +494,37 @@ def StudentAddView(request):
 
     # is it really a csv file??
     if not csv_file.name.endswith('.csv'):
-        messages.error(request, "This is not a CSV file")
+        HttpResponseRedirect(request, "This is not a CSV file")
 
     data_set = csv_file.read().decode('UTF-8')
-    # setup a stream which is when we loop through each line, 
+    # setup a stream which is when we loop through each line,
     # and handle each student data in the stream.
     io_string = io.StringIO(data_set)
     next(io_string)
-    for column in csv.reader(io_string, delimiter=',', quotechar="|"):
-        _, student_details = Users.objects.update_or_create(
-            password=make_password(column[0]),
-            last_login="2020-05-01 05:51:42.521991",
-            is_superuser="0",
-            username=column[1],
-            first_name=column[2],
-            last_name=column[3],
-            is_staff="0",
-            is_active="1",
-            date_joined="2020-05-01 05:51:42",
-            is_student="1",
-            is_lecturer="0",
-            phone=column[4],
-            address=column[5],
-            picture=None,
-            email=column[6])
-        _, student_profile = Student.objects.update_or_create(
-            user= User.objects.get(username=column[1]),
-            id_number=column[7],
-            level=column[8]
-        )
+    try:
+        for column in csv.reader(io_string, delimiter=',', quotechar="|"):
+            _, student_details = Users.objects.update_or_create(
+                password=make_password(column[0]),
+                last_login="2020-05-01 05:51:42.521991",
+                is_superuser="0",
+                username=column[1],
+                first_name=column[2],
+                last_name=column[3],
+                is_staff="0",
+                is_active="1",
+                date_joined="2020-05-01 05:51:42",
+                is_student="1",
+                is_lecturer="0",
+                phone=column[4],
+                address=column[5],
+                picture=None,
+                email=column[6])
+            _, student_profile = Student.objects.update_or_create(
+                user=User.objects.get(username=column[1]),
+                id_number=column[7],
+                level=column[8])
+    except:
+        messages.error(request, "Integrity Error:  Users alredy exists")
     context = {}
     return render(request, template, context)
 
@@ -853,16 +812,6 @@ def view_result(request):
     previousLEVEL = 0
     currentCGPA = 0
     # TODO : implement previousCGPA funtionality later
-    # for i in result:
-    #     if not int(i.level) - 100 == 0: # TODO think n check the logic : no pre for 100l
-    #         previousLEVEL = int(i.level) - 100
-    #         try:
-    #             a = Result.objects.get(
-    #                 student__user__pk=request.user.id, level=previousLEVEL, semester="Second")
-    #             previousCGPA = a.cgpa
-    #             break
-    #         except:
-    #             previousCGPA = 0
     try:
         a = Result.objects.get(student__user__pk=request.user.id,
                                level=student.level,
@@ -870,10 +819,7 @@ def view_result(request):
         current_CGPA = a.cgpa
     except:
         current_CGPA = 0
-        # else:
-        #     a = Result.objects.get(
-        #             student__user__pk=request.user.id, level=i.level, semester="Second")
-        #     currentCGPA = a.cgpa
+
     context = {
         "courses": courses,
         "result": result,
@@ -967,398 +913,20 @@ def first_class_list(request):
 @login_required
 @lecturer_required
 def result_sheet_pdf_view(request, id):
-    current_semester = Semester.objects.get(is_current_semester=True)
-    current_session = Session.objects.get(is_current_session=True)
-    result = TakenCourse.objects.filter(course__pk=id)
-    no_of_pass = TakenCourse.objects.filter(course__pk=id,
-                                            comment="PASS").count()
-    no_of_fail = TakenCourse.objects.filter(course__pk=id,
-                                            comment="FAIL").count()
-    fname = str(current_semester) + '_semester_' + \
-        str(current_session) + '_session_' + 'resultSheet.pdf'
-    fname = fname.replace("/", "-")
-    flocation = '/tmp/' + fname
-
-    doc = SimpleDocTemplate(flocation,
-                            rightMargin=0,
-                            leftMargin=6.5 * cm,
-                            topMargin=0.3 * cm,
-                            bottomMargin=0)
-    styles = getSampleStyleSheet()
-    styles.add(
-        ParagraphStyle(name="ParagraphTitle",
-                       fontSize=11,
-                       fontName="FreeSansBold"))
-    Story = [Spacer(1, .2)]
-    style = styles["Normal"]
-
-    logo = MEDIA_ROOT + "/logo/android-chrome-144x144.png"
-    print(logo)
-    im = Image(logo, 1 * inch, 1 * inch)
-    im.__setattr__("_offs_x", -280)
-    im.__setattr__("_offs_y", -45)
-    Story.append(im)
-
-    style = getSampleStyleSheet()
-    normal = style["Normal"]
-    normal.alignment = TA_CENTER
-    normal.fontName = "Helvetica"
-    normal.fontSize = 12
-    normal.leading = 15
-    title = "<b> "+str(current_semester) + " Semester " + \
-        str(current_session) + " Result Sheet</b>"
-    title = Paragraph(title.upper(), normal)
-    Story.append(title)
-    Story.append(Spacer(1, 0.1 * inch))
-
-    style = getSampleStyleSheet()
-    normal = style["Normal"]
-    normal.alignment = TA_CENTER
-    normal.fontName = "Helvetica"
-    normal.fontSize = 10
-    normal.leading = 15
-    title = "<b>Course lecturer: " + request.user.get_full_name() + "</b>"
-    title = Paragraph(title.upper(), normal)
-    Story.append(title)
-    Story.append(Spacer(1, 0.1 * inch))
-
-    normal = style["Normal"]
-    normal.alignment = TA_CENTER
-    normal.fontName = "Helvetica"
-    normal.fontSize = 10
-    normal.leading = 15
-    level = result.filter(course_id=id).first()
-    title = "<b>Level: </b>" + str(level.course.level + "L")
-    title = Paragraph(title.upper(), normal)
-    Story.append(title)
-    Story.append(Spacer(1, .6 * inch))
-
-    elements = []
-    count = 0
-    header = [('S/N', 'ID NUMBER', 'CA', 'EXAM', 'GRADE', 'COMMENT')]
-    table_header = Table(header, 1 * [1.2 * inch], 1 * [0.5 * inch])
-    table_header.setStyle(
-        TableStyle([
-            ('ALIGN', (-2, -2), (-2, -2), 'CENTER'),
-            ('TEXTCOLOR', (1, 0), (1, 0), colors.blue),
-            ('TEXTCOLOR', (-1, 0), (-1, 0), colors.blue),
-            ('ALIGN', (0, -1), (-1, -1), 'CENTER'),
-            ('VALIGN', (0, -1), (-1, -1), 'MIDDLE'),
-            ('TEXTCOLOR', (0, -1), (-1, -1), colors.blue),
-            ('INNERGRID', (0, 0), (-1, -1), 0.25, colors.black),
-            ('BOX', (0, 0), (-1, -1), 0.25, colors.black),
-        ]))
-    Story.append(table_header)
-    for student in result:
-        data = [(count + 1, student.student.id_number.upper(), student.ca,
-                 student.exam, student.grade, student.comment)]
-        color = colors.black
-        if student.grade == 'F':
-            color = colors.red
-        count += 1
-        t = Table(data, 1 * [1.2 * inch], 1 * [0.5 * inch])
-        t.setStyle(
-            TableStyle([
-                ('ALIGN', (-2, -2), (-2, -2), 'CENTER'),
-                ('ALIGN', (1, 0), (1, 0), 'CENTER'),
-                ('ALIGN', (-1, 0), (-1, 0), 'CENTER'),
-                ('ALIGN', (-3, 0), (-3, 0), 'CENTER'),
-                ('ALIGN', (-4, 0), (-4, 0), 'CENTER'),
-                ('ALIGN', (-6, 0), (-6, 0), 'CENTER'),
-                ('TEXTCOLOR', (0, -1), (-1, -1), color),
-                ('INNERGRID', (0, 0), (-1, -1), 0.25, colors.black),
-                ('BOX', (0, 0), (-1, -1), 0.25, colors.black),
-            ]))
-        Story.append(t)
-
-    Story.append(Spacer(1, 1 * inch))
-    style_right = ParagraphStyle(name='right',
-                                 parent=styles['Normal'],
-                                 alignment=TA_RIGHT)
-    tbl_data = [
-        [
-            Paragraph("<b>Date:</b>_______________________________________",
-                      styles["Normal"]),
-            Paragraph("<b>No. of PASS:</b> " + str(no_of_pass), style_right)
-        ],
-        [
-            Paragraph(
-                "<b>Siganture / Stamp:</b> _____________________________",
-                styles["Normal"]),
-            Paragraph("<b>No. of FAIL: </b>" + str(no_of_fail), style_right)
-        ]
-    ]
-    tbl = Table(tbl_data)
-    Story.append(tbl)
-
-    doc.build(Story)
-
-    fs = FileSystemStorage("/tmp")
-    with fs.open(fname) as pdf:
-        response = HttpResponse(pdf, content_type='application/pdf')
-        response['Content-Disposition'] = 'inline; filename=' + fname + ''
-        return response
-    return response
+    pass # TODO: print result with weasyprint
 
 
-@login_required
-@student_required
-def course_registration_form(request):
-    current_semester = Semester.objects.get(is_current_semester=True)
-    current_session = Session.objects.get(is_current_session=True)
-    courses = TakenCourse.objects.filter(student__user__id=request.user.id)
-    fname = request.user.username + '.pdf'
-    fname = fname.replace("/", "-")
-    flocation = '/tmp/' + fname
-    doc = SimpleDocTemplate(flocation,
-                            rightMargin=15,
-                            leftMargin=15,
-                            topMargin=0,
-                            bottomMargin=0)
-    styles = getSampleStyleSheet()
-
-    Story = [Spacer(1, 0.5)]
-    Story.append(Spacer(1, 0.4 * inch))
-    style = styles["Normal"]
-
-    style = getSampleStyleSheet()
-    normal = style["Normal"]
-    normal.alignment = TA_CENTER
-    normal.fontName = "Helvetica"
-    normal.fontSize = 12
-    normal.leading = 18
-    title = "<b>MODIBBO ADAMA UNIVERSITY OF TECHNOLOGY, YOLA</b>"
-    title = Paragraph(title.upper(), normal)
-    Story.append(title)
-    style = getSampleStyleSheet()
-
-    school = style["Normal"]
-    school.alignment = TA_CENTER
-    school.fontName = "Helvetica"
-    school.fontSize = 10
-    school.leading = 18
-    school_title = "<b>SCHOOL OF MANAGEMENT AND INFORMATION TECHNOLOGY</b>"
-    school_title = Paragraph(school_title.upper(), school)
-    Story.append(school_title)
-
-    style = getSampleStyleSheet()
-    Story.append(Spacer(1, 0.1 * inch))
-    department = style["Normal"]
-    department.alignment = TA_CENTER
-    department.fontName = "Helvetica"
-    department.fontSize = 9
-    department.leading = 18
-    department_title = "<b>DEPARTMENT OF INFORMATION MANAGEMENT TECHNOLOGY</b>"
-    department_title = Paragraph(department_title, department)
-    Story.append(department_title)
-    Story.append(Spacer(1, .3 * inch))
-
-    title = "<b><u>STUDENT REGISTRATION FORM</u></b>"
-    title = Paragraph(title.upper(), normal)
-    Story.append(title)
-    student = Student.objects.get(user__pk=request.user.id)
-
-    style_right = ParagraphStyle(name='right', parent=styles['Normal'])
-    tbl_data = [
-        [
-            Paragraph(
-                "<b>Registration Number : " + request.user.username.upper() +
-                "</b>", styles["Normal"])
-        ],
-        [
-            Paragraph(
-                "<b>Name : " + request.user.get_full_name().upper() + "</b>",
-                styles["Normal"])
-        ],
-        [
-            Paragraph(
-                "<b>Session : " + current_session.session.upper() + "</b>",
-                styles["Normal"]),
-            Paragraph("<b>Level: " + student.level + "</b>", styles["Normal"])
-        ]
-    ]
-    tbl = Table(tbl_data)
-    Story.append(tbl)
-    Story.append(Spacer(1, 0.6 * inch))
-
-    style = getSampleStyleSheet()
-    semester = style["Normal"]
-    semester.alignment = TA_LEFT
-    semester.fontName = "Helvetica"
-    semester.fontSize = 9
-    semester.leading = 18
-    semester_title = "<b>FIRST SEMESTER</b>"
-    semester_title = Paragraph(semester_title, semester)
-    Story.append(semester_title)
-
-    elements = []
-
-    # FIRST SEMESTER
-    count = 0
-    header = [('S/No', 'Course Code', 'Course Title', 'Unit',
-               Paragraph('Name, Siganture of course lecturer & Date',
-                         style['Normal']))]
-    table_header = Table(header, 1 * [1.4 * inch], 1 * [0.5 * inch])
-    table_header.setStyle(
-        TableStyle([
-            ('ALIGN', (-2, -2), (-2, -2), 'CENTER'),
-            ('VALIGN', (-2, -2), (-2, -2), 'MIDDLE'),
-            ('ALIGN', (1, 0), (1, 0), 'CENTER'),
-            ('VALIGN', (1, 0), (1, 0), 'MIDDLE'),
-            ('ALIGN', (0, 0), (0, 0), 'CENTER'),
-            ('VALIGN', (0, 0), (0, 0), 'MIDDLE'),
-            ('ALIGN', (-4, 0), (-4, 0), 'LEFT'),
-            ('VALIGN', (-4, 0), (-4, 0), 'MIDDLE'),
-            ('ALIGN', (-3, 0), (-3, 0), 'LEFT'),
-            ('VALIGN', (-3, 0), (-3, 0), 'MIDDLE'),
-            ('TEXTCOLOR', (0, -1), (-1, -1), colors.black),
-            ('INNERGRID', (0, 0), (-1, -1), 0.25, colors.black),
-            ('BOX', (0, 0), (-1, -1), 0.25, colors.black),
-        ]))
-    Story.append(table_header)
-
-    first_semester_unit = 0
-    for course in courses:
-        if course.course.semester == FIRST:
-            first_semester_unit += int(course.course.courseUnit)
-            data = [(count + 1, course.course.courseCode.upper(),
-                     course.course.courseTitle, course.course.courseUnit, '')]
-            color = colors.black
-            count += 1
-            table_body = Table(data, 1 * [1.4 * inch], 1 * [0.3 * inch])
-            table_body.setStyle(
-                TableStyle([
-                    ('ALIGN', (-2, -2), (-2, -2), 'CENTER'),
-                    ('ALIGN', (1, 0), (1, 0), 'CENTER'),
-                    ('ALIGN', (0, 0), (0, 0), 'CENTER'),
-                    ('ALIGN', (-4, 0), (-4, 0), 'LEFT'),
-                    ('TEXTCOLOR', (0, -1), (-1, -1), colors.black),
-                    ('INNERGRID', (0, 0), (-1, -1), 0.25, colors.black),
-                    ('BOX', (0, 0), (-1, -1), 0.25, colors.black),
-                ]))
-            Story.append(table_body)
-
-    style = getSampleStyleSheet()
-    semester = style["Normal"]
-    semester.alignment = TA_LEFT
-    semester.fontName = "Helvetica"
-    semester.fontSize = 8
-    semester.leading = 18
-    semester_title = "<b>Total Units : " + str(first_semester_unit) + "</b>"
-    semester_title = Paragraph(semester_title, semester)
-    Story.append(semester_title)
-
-    # FIRST SEMESTER ENDS HERE
-    Story.append(Spacer(1, 0.6 * inch))
-
-    style = getSampleStyleSheet()
-    semester = style["Normal"]
-    semester.alignment = TA_LEFT
-    semester.fontName = "Helvetica"
-    semester.fontSize = 9
-    semester.leading = 18
-    semester_title = "<b>SECOND SEMESTER</b>"
-    semester_title = Paragraph(semester_title, semester)
-    Story.append(semester_title)
-    # SECOND SEMESTER
-    count = 0
-    header = [('S/No', 'Course Code', 'Course Title', 'Unit',
-               Paragraph('<b>Name, Siganture of course lecturer & Date</b>',
-                         style['Normal']))]
-    table_header = Table(header, 1 * [1.4 * inch], 1 * [0.5 * inch])
-    table_header.setStyle(
-        TableStyle([
-            ('ALIGN', (-2, -2), (-2, -2), 'CENTER'),
-            ('VALIGN', (-2, -2), (-2, -2), 'MIDDLE'),
-            ('ALIGN', (1, 0), (1, 0), 'CENTER'),
-            ('VALIGN', (1, 0), (1, 0), 'MIDDLE'),
-            ('ALIGN', (0, 0), (0, 0), 'CENTER'),
-            ('VALIGN', (0, 0), (0, 0), 'MIDDLE'),
-            ('ALIGN', (-4, 0), (-4, 0), 'LEFT'),
-            ('VALIGN', (-4, 0), (-4, 0), 'MIDDLE'),
-            ('ALIGN', (-3, 0), (-3, 0), 'LEFT'),
-            ('VALIGN', (-3, 0), (-3, 0), 'MIDDLE'),
-            ('TEXTCOLOR', (0, -1), (-1, -1), colors.black),
-            ('INNERGRID', (0, 0), (-1, -1), 0.25, colors.black),
-            ('BOX', (0, 0), (-1, -1), 0.25, colors.black),
-        ]))
-    Story.append(table_header)
-
-    second_semester_unit = 0
-    for course in courses:
-        if course.course.semester == SECOND:
-            second_semester_unit += int(course.course.courseUnit)
-            data = [(count + 1, course.course.courseCode.upper(),
-                     course.course.courseTitle, course.course.courseUnit, '')]
-            color = colors.black
-            count += 1
-            table_body = Table(data, 1 * [1.4 * inch], 1 * [0.3 * inch])
-            table_body.setStyle(
-                TableStyle([
-                    ('ALIGN', (-2, -2), (-2, -2), 'CENTER'),
-                    ('ALIGN', (1, 0), (1, 0), 'CENTER'),
-                    ('ALIGN', (0, 0), (0, 0), 'CENTER'),
-                    ('ALIGN', (-4, 0), (-4, 0), 'LEFT'),
-                    ('TEXTCOLOR', (0, -1), (-1, -1), colors.black),
-                    ('INNERGRID', (0, 0), (-1, -1), 0.25, colors.black),
-                    ('BOX', (0, 0), (-1, -1), 0.25, colors.black),
-                ]))
-            Story.append(table_body)
-
-    style = getSampleStyleSheet()
-    semester = style["Normal"]
-    semester.alignment = TA_LEFT
-    semester.fontName = "Helvetica"
-    semester.fontSize = 8
-    semester.leading = 18
-    semester_title = "<b>Total Units : " + str(second_semester_unit) + "</b>"
-    semester_title = Paragraph(semester_title, semester)
-    Story.append(semester_title)
-
-    Story.append(Spacer(1, 2))
-    style = getSampleStyleSheet()
-    certification = style["Normal"]
-    certification.alignment = TA_JUSTIFY
-    certification.fontName = "Helvetica"
-    certification.fontSize = 8
-    certification.leading = 18
-    student = Student.objects.get(user__pk=request.user.id)
-    certification_text = "CERTIFICATION OF REGISTRATION: I certify that <b>" + str(
-        request.user.get_full_name().upper()) + "</b>\
-    has been duly registered for the <b>" + student.level + " level </b> of study in the department\
-    of INFORMATION MANAGEMENT TECHNOLOGY and that the courses and units registered are as approved by the senate of the University"
-
-    certification_text = Paragraph(certification_text, certification)
-    Story.append(certification_text)
-
-    # FIRST SEMESTER ENDS HERE
-
-    logo = MEDIA_ROOT + "/logo/android-chrome-144x144.png"
-    im = Image(logo, 1.5 * inch, 1.5 * inch)
-    im.__setattr__("_offs_x", -228)
-    im.__setattr__("_offs_y", 625)
-    Story.append(im)
-
-    picture = BASE_DIR + request.user.get_picture()
-    im = Image(picture, 1.0 * inch, 1.0 * inch)
-    im.__setattr__("_offs_x", 218)
-    im.__setattr__("_offs_y", 625)
-    Story.append(im)
-    doc.build(Story)
-    fs = FileSystemStorage("/tmp")
-    with fs.open(fname) as pdf:
-        response = HttpResponse(pdf, content_type='application/pdf')
-        response['Content-Disposition'] = 'inline; filename=' + fname + ''
-        return response
-    return responseall_courses_areegistered
-
-
-#View to handle WeasyPrint PDF for student Course Registration
 @login_required
 @student_required
 def course_registration_pdf(request):
-    # user = get_object_or_404(TakenCourse)
-    # if request.method == 'GET':
+    """View to handle WeasyPrint PDF for student Course Registration
+
+    Args:
+        request ([type]): [description]
+
+    Returns:
+        [type]: [description]
+    """
     student = Student.objects.get(user__pk=request.user.id)
     taken_courses = TakenCourse.objects.filter(
         student__user__id=request.user.id)

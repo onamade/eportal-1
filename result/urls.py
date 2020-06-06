@@ -3,7 +3,6 @@ from . import views
 
 urlpatterns = [
     path('', views.home, name="home"),
-    path('register/', views.register, name="register"),
     path('score/', views.add_score, name='add_score'),
     path('score/<int:id>/', views.add_score_for, name='add_score_for'),
     path('profile/', views.profile, name='profile'),
@@ -66,9 +65,6 @@ urlpatterns = [
     path('result/print/<int:id>/',
          views.result_sheet_pdf_view,
          name='result_sheet_pdf_view'),
-    path('registration/form/',
-         views.course_registration_form,
-         name='course_registration_form'),
     path('api/data/', views.get_chart, name='chart'),
     path('coursepdf/',
          views.course_registration_pdf,
