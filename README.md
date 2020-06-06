@@ -24,9 +24,9 @@ on linux run: `python manage.py createsuperuser` on windows run: `py manage.py c
 
 1. on your local machine, run `git remote add upstream git@github.com/developerayyo/eportal.git`
 
-1. then run `git checkout collaborators`
+1. then run `git checkout master`
 
-1. lastly, run `git pull upstream collaborators`
+1. lastly, run `git pull upstream master`
 
 ## Want to Contribute
 
