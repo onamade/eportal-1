@@ -1,9 +1,13 @@
 import os
+import csv
+import io
 from eportal.settings import MEDIA_ROOT, BASE_DIR, STATIC_URL
 from django.shortcuts import get_object_or_404, redirect, render
 from django.contrib.auth.decorators import login_required
 from .decorators import lecturer_required, student_required
-from .forms import *
+from .forms import StaffAddForm, StudentAddForm, CourseAddForm, \
+    ChangePasswordForm, CourseAllocationForm, CourseRegitsrationForm, \
+        ProfileForm, SessionForm, SemesterForm
 from .models import User, Student, Course, CourseAllocation, TakenCourse, \
     Session, Semester, CarryOverStudent, RepeatingStudent
 from django.views.generic import CreateView, UpdateView, DeleteView
@@ -13,21 +17,10 @@ from django.contrib.auth.forms import PasswordChangeForm
 from django.urls import reverse_lazy
 from django.http import HttpResponseRedirect
 from django.contrib import messages
-import csv, io
-# pdf
 from django.core.files.storage import FileSystemStorage
 from django.http import HttpResponse, JsonResponse
-
-from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, \
-    TableStyle, Image
-from reportlab.lib.styles import getSampleStyleSheet, black, ParagraphStyle
-from reportlab.lib.enums import TA_JUSTIFY, TA_LEFT, TA_CENTER, TA_RIGHT
-from reportlab.platypus.tables import Table
-from reportlab.lib.units import inch
-from reportlab.lib import colors
 # pdf with WeasyPrint required imports
 from django.conf import settings
-from django.http import HttpResponse
 from django.template.loader import render_to_string
 import weasyprint
 from django.contrib.auth.hashers import make_password

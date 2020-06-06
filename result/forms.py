@@ -8,57 +8,47 @@ from django.forms import BaseModelFormSet
 class StaffAddForm(UserCreationForm):
     address = forms.CharField(
         max_length=30,
-        widget=forms.TextInput(
-            attrs={
-                'type': 'text',
-                'class': 'form-control',
-            }
-        ),
-        label = "Address",
+        widget=forms.TextInput(attrs={
+            'type': 'text',
+            'class': 'form-control',
+        }),
+        label="Address",
     )
 
     phone = forms.CharField(
         max_length=30,
-        widget=forms.TextInput(
-            attrs={
-                'type': 'text',
-                'class': 'form-control',
-            }
-        ),
-        label = "Mobile No.",
+        widget=forms.TextInput(attrs={
+            'type': 'text',
+            'class': 'form-control',
+        }),
+        label="Mobile No.",
     )
 
     firstname = forms.CharField(
         max_length=30,
-        widget=forms.TextInput(
-            attrs={
-                'type': 'text',
-                'class': 'form-control',
-            }
-        ),
-        label = "Firstname",
+        widget=forms.TextInput(attrs={
+            'type': 'text',
+            'class': 'form-control',
+        }),
+        label="Firstname",
     )
 
     lastname = forms.CharField(
         max_length=30,
-        widget=forms.TextInput(
-            attrs={
-                'type': 'text',
-                'class': 'form-control',
-            }
-        ),
-        label = "Lastname",
+        widget=forms.TextInput(attrs={
+            'type': 'text',
+            'class': 'form-control',
+        }),
+        label="Lastname",
     )
 
     email = forms.CharField(
         max_length=30,
-        widget=forms.TextInput(
-            attrs={
-                'type': 'text',
-                'class': 'form-control',
-            }
-        ),
-        label = "Email",
+        widget=forms.TextInput(attrs={
+            'type': 'text',
+            'class': 'form-control',
+        }),
+        label="Email",
     )
 
     class Meta(UserCreationForm.Meta):
@@ -81,91 +71,76 @@ class StaffAddForm(UserCreationForm):
 class StudentAddForm(UserCreationForm):
     username = forms.CharField(
         max_length=30,
-        widget=forms.TextInput(
-            attrs={
-                'type': 'text',
-                'class': 'form-control',
-            }
-        ),
-        label = "Username",
+        widget=forms.TextInput(attrs={
+            'type': 'text',
+            'class': 'form-control',
+        }),
+        label="Username",
     )
     address = forms.CharField(
         max_length=30,
-        widget=forms.TextInput(
-            attrs={
-                'type': 'text',
-                'class': 'form-control',
-            }
-        ),
-        label = "Address",
+        widget=forms.TextInput(attrs={
+            'type': 'text',
+            'class': 'form-control',
+        }),
+        label="Address",
     )
 
     phone = forms.CharField(
         max_length=30,
-        widget=forms.TextInput(
-            attrs={
-                'type': 'text',
-                'class': 'form-control',
-            }
-        ),
-        label = "Mobile No.",
+        widget=forms.TextInput(attrs={
+            'type': 'text',
+            'class': 'form-control',
+        }),
+        label="Mobile No.",
     )
 
     firstname = forms.CharField(
         max_length=30,
-        widget=forms.TextInput(
-            attrs={
-                'type': 'text',
-                'class': 'form-control',
-            }
-        ),
-        label = "Firstname",
+        widget=forms.TextInput(attrs={
+            'type': 'text',
+            'class': 'form-control',
+        }),
+        label="Firstname",
     )
 
     lastname = forms.CharField(
         max_length=30,
-        widget=forms.TextInput(
-            attrs={
-                'type': 'text',
-                'class': 'form-control',
-            }
-        ),
-        label = "Lastname",
+        widget=forms.TextInput(attrs={
+            'type': 'text',
+            'class': 'form-control',
+        }),
+        label="Lastname",
     )
 
-    level = forms.CharField(
-        widget=forms.Select(
-            choices = LEVEL,
-            attrs={
-                'class': 'browser-default custom-select',
-            }
-        ),
-    )
+    level = forms.CharField(widget=forms.Select(
+        choices=LEVEL, attrs={
+            'class': 'browser-default custom-select',
+        }), )
 
     email = forms.EmailField(
-        widget=forms.TextInput(
-            attrs={
-                'type': 'email',
-                'class': 'form-control',
-            }
-        ),
-        label = "Email Address",
+        widget=forms.TextInput(attrs={
+            'type': 'email',
+            'class': 'form-control',
+        }),
+        label="Email Address",
     )
 
     class Meta(UserCreationForm.Meta):
         model = User
 
-
     @transaction.atomic()
     def save(self):
         user = super().save(commit=False)
         user.is_student = True
-        user.first_name=self.cleaned_data.get('firstname')
-        user.last_name=self.cleaned_data.get('lastname')
-        user.phone=self.cleaned_data.get('phone')
-        user.email=self.cleaned_data.get('email')
+        user.first_name = self.cleaned_data.get('firstname')
+        user.last_name = self.cleaned_data.get('lastname')
+        user.phone = self.cleaned_data.get('phone')
+        user.email = self.cleaned_data.get('email')
         user.save()
-        student = Student.objects.create(user=user, id_number=user.username, level=self.cleaned_data.get('level'))
+        student = Student.objects.create(user=user,
+                                         id_number=user.username,
+                                         level=self.cleaned_data.get('level'))
         student.save()
         return user
 
@@ -173,70 +148,61 @@ class StudentAddForm(UserCreationForm):
 class CourseAddForm(forms.ModelForm):
     courseTitle = forms.CharField(
         max_length=30,
-        widget=forms.TextInput(
-            attrs={
-                'class': 'form-control',
-            }
-        ),
-        label = "*Course Title",
+        widget=forms.TextInput(attrs={
+            'class': 'form-control',
+        }),
+        label="*Course Title",
     )
     courseCode = forms.CharField(
         max_length=30,
-        widget=forms.TextInput(
-            attrs={
-                'class': 'form-control',
-            }
-        ),
-        label = "*Course Code",
+        widget=forms.TextInput(attrs={
+            'class': 'form-control',
+        }),
+        label="*Course Code",
     )
 
     courseUnit = forms.CharField(
         max_length=30,
-        widget=forms.TextInput(
-            attrs={
-                'class': 'form-control',
-            }
-        ),
-        label = "*Course Unit",
+        widget=forms.TextInput(attrs={
+            'class': 'form-control',
+        }),
+        label="*Course Unit",
     )
 
     description = forms.CharField(
         max_length=30,
-        widget=forms.TextInput(
-            attrs={
-                'class': 'form-control',
-            }
-        ),
-        label = "Add a little description",
-        required = False,
+        widget=forms.TextInput(attrs={
+            'class': 'form-control',
+        }),
+        label="Add a little description",
+        required=False,
     )
 
     level = forms.CharField(
-        widget=forms.Select(
-            choices = LEVEL,
-            attrs={
-                'class': 'browser-default custom-select',
-            }
-        ),
-        label = "*Level",
+        widget=forms.Select(choices=LEVEL,
+                            attrs={
+                                'class': 'browser-default custom-select',
+                            }),
+        label="*Level",
     )
 
     semester = forms.CharField(
         max_length=30,
-        widget=forms.Select(
-            choices=SEMESTER,
-            attrs={
-                'class': 'form-control',
-            }
-        ),
-        label = "*Semester",
+        widget=forms.Select(choices=SEMESTER,
+                            attrs={
+                                'class': 'form-control',
+                            }),
+        label="*Semester",
     )
 
-    is_elective = forms.BooleanField(label = "*is_elective", required=False)
+    is_elective = forms.BooleanField(label="*is_elective", required=False)
+
     class Meta:
         model = Course
-        fields = ['courseCode', 'courseTitle', 'courseUnit', 'level', 'description', 'semester', 'is_elective']
-
+        fields = [
+            'courseCode', 'courseTitle', 'courseUnit', 'level', 'description',
+            'semester', 'is_elective'
+        ]
 
 
 class ChangePasswordForm(forms.ModelForm):
@@ -267,11 +233,11 @@ class ChangePasswordForm(forms.ModelForm):
         id = self.cleaned_data.get('id')
         user = User.objects.get(pk=id)
         if not user.check_password(password):
-            self._errors['password'] = self.error_class([
-                'Old password don\'t match'])
+            self._errors['password'] = self.error_class(
+                ['Old password don\'t match'])
         if password1 and password1 != password2:
-            self._errors['password1'] = self.error_class([
-                'Passwords don\'t match'])
+            self._errors['password1'] = self.error_class(
+                ['Passwords don\'t match'])
         return self.cleaned_data
 
 
@@ -279,8 +245,7 @@ class CourseAllocationForm(forms.ModelForm):
     courses = forms.ModelMultipleChoiceField(
         queryset=Course.objects.all().order_by('level'),
         widget=forms.CheckboxSelectMultiple,
-        required=True
-    )
+        required=True)
     lecturer = forms.ModelChoiceField(
         queryset=User.objects.filter(is_lecturer=True),
         widget=forms.Select(attrs={'class': 'browser-default custom-select'}),
@@ -288,23 +253,21 @@ class CourseAllocationForm(forms.ModelForm):
     )
 
     class Meta:
-       model = CourseAllocation
-       fields = ['lecturer', 'courses']
+        model = CourseAllocation
+        fields = ['lecturer', 'courses']
 
     def __init__(self, *args, **kwargs):
-       user = kwargs.pop('user')
-       super(CourseAllocationForm, self).__init__(*args, **kwargs)
-       self.fields['lecturer'].queryset = User.objects.filter(is_lecturer=True)
-
+        user = kwargs.pop('user')
+        super(CourseAllocationForm, self).__init__(*args, **kwargs)
+        self.fields['lecturer'].queryset = User.objects.filter(
+            is_lecturer=True)
 
 
 class CourseRegitsrationForm(forms.ModelForm):
     class Meta:
         model = TakenCourse
         fields = ('course', )
-        widgets = {
-            'course': forms.CheckboxSelectMultiple
-        }
+        widgets = {'course': forms.CheckboxSelectMultiple}
 
 
 class ProfileForm(forms.ModelForm):
@@ -342,66 +305,48 @@ class ProfileForm(forms.ModelForm):
 
     class Meta:
         model = User
-        fields = ['first_name', 'last_name',
-                  'email', 'phone', 'address', 'picture']
+        fields = [
+            'first_name', 'last_name', 'email', 'phone', 'address', 'picture'
+        ]
+
 
 class SessionForm(forms.ModelForm):
     class Meta:
         model = Session
         fields = ['session']
 
+
 class SemesterForm(forms.ModelForm):
     semester = forms.CharField(
-        widget=forms.Select(
-            choices = SEMESTER,
-            attrs={
-                'class': 'browser-default custom-select',
-            }
-        ),
-        label = "semester",
+        widget=forms.Select(choices=SEMESTER,
+                            attrs={
+                                'class': 'browser-default custom-select',
+                            }),
+        label="semester",
     )
     is_current_semester = forms.CharField(
-        widget=forms.Select(
-            choices = ((True, 'Yes'), (False, 'No')),
-            attrs={
-                'class': 'browser-default custom-select',
-            }
-        ),
-        label = "is current semester ?",
+        widget=forms.Select(choices=((True, 'Yes'), (False, 'No')),
+                            attrs={
+                                'class': 'browser-default custom-select',
+                            }),
+        label="is current semester ?",
     )
     session = forms.ModelChoiceField(
         queryset=Session.objects.all(),
-        widget=forms.Select(
-            attrs={
-                'class': 'browser-default custom-select',
-            }
-        ),
-        required=True
-    )
+        widget=forms.Select(attrs={
+            'class': 'browser-default custom-select',
+        }),
+        required=True)
 
     next_semester_begins = forms.DateTimeField(
-        widget=forms.TextInput(
-            attrs={
-                'type': 'date',
-            }
-        ),
-        required=True)
+        widget=forms.TextInput(attrs={
+            'type': 'date',
+        }), required=True)
+
     class Meta:
         model = Semester
-        fields = ['semester', 'is_current_semester', 'session', 'next_semester_begins']
+        fields = [
+            'semester', 'is_current_semester', 'session',
+            'next_semester_begins'
+        ]
 
-class UserRegistrationForm(forms.ModelForm):
-    password = forms.CharField(label='Password',
-                               widget=forms.PasswordInput)
-    password2 = forms.CharField(label='Repeat password',
-                                widget=forms.PasswordInput)
-
-    class Meta:
-        model = User
-        fields = ('username', 'first_name', 'last_name', 'email', 'phone', 'address', 'picture', 'email')
-
-    def clean_password2(self):
-        cd = self.cleaned_data
-        if cd['password'] != cd['password2']:
-            raise forms.ValidationError('Passwords don\'t match.')
-        return cd['password2']
