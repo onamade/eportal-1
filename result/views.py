@@ -422,19 +422,64 @@ def semester_delete_view(request, pk):
     return redirect('manage_semester')
 
 
-@method_decorator([login_required, lecturer_required], name='dispatch')
-class StaffAddView(CreateView):
-    model = User
-    form_class = StaffAddForm
-    template_name = 'registration/add_staff.html'
+# @method_decorator([login_required, lecturer_required], name='dispatch')
+@login_required
+@lecturer_required
+def StaffAddView(request):
+    """A function that add lecturer details to the database from a CSV file
 
-    def get_context_data(self, **kwargs):
-        kwargs['user_type'] = 'staff'
-        return super().get_context_data(**kwargs)
+    Args:
+        request ([type]): [description]
+    """
+    # model = User
+    # form_class = StaffAddForm
+    # template_name = 'registration/add_staff.html'
 
-    def form_valid(self, form):
-        user = form.save()
-        return redirect('staff_list')
+    # def get_context_data(self, **kwargs):
+    #     kwargs['user_type'] = 'staff'
+    #     return super().get_context_data(**kwargs)
+
+    # def form_valid(self, form):
+    #     user = form.save()
+    #     return redirect('staff_list')
+    template = "registration/add_staff.html"
+    Users = get_user_model()
+
+    # setup a stream which is when we loop through each line we are
+    # to handle a data in a stream
+    prompt = {'order': 'Just upload the csv file for now'}
+    if request.method == "GET":
+        return render(request, template, prompt)
+    csv_file = request.FILES['file']
+
+    # is it really a csv file??
+    if not csv_file.name.endswith('.csv'):
+        messages.error(request, "This is not a CSV file")
+
+    data_set = csv_file.read().decode('UTF-8')
+    # setup a stream which is when we loop through each line, 
+    # and handle each student data in the stream.
+    io_string = io.StringIO(data_set)
+    next(io_string)
+    for column in csv.reader(io_string, delimiter=',', quotechar="|"):
+        _, lecturer_details = Users.objects.update_or_create(
+            password=make_password(column[0]),
+            last_login="2020-05-01 05:51:42.521991",
+            is_superuser="0",
+            username=column[1],
+            first_name=column[2],
+            last_name=column[3],
+            is_staff="0",
+            is_active="1",
+            date_joined="2020-05-01 05:51:42",
+            is_student="0",
+            is_lecturer="1",
+            phone=column[4],
+            address=column[5],
+            picture=None,
+            email=column[6])
+    context = {}
+    return render(request, template, context)
 
 
 @login_required
@@ -495,12 +540,12 @@ def StudentAddView(request):
         messages.error(request, "This is not a CSV file")
 
     data_set = csv_file.read().decode('UTF-8')
-    # setup a stream which is when we loop through each line we are
-    # to handle a data in a stream
+    # setup a stream which is when we loop through each line, 
+    # and handle each student data in the stream.
     io_string = io.StringIO(data_set)
     next(io_string)
     for column in csv.reader(io_string, delimiter=',', quotechar="|"):
-        _, created = Users.objects.update_or_create(
+        _, student_details = Users.objects.update_or_create(
             password=make_password(column[0]),
             last_login="2020-05-01 05:51:42.521991",
             is_superuser="0",
@@ -516,6 +561,11 @@ def StudentAddView(request):
             address=column[5],
             picture=None,
             email=column[6])
+        _, student_profile = Student.objects.update_or_create(
+            user= User.objects.get(username=column[1]),
+            id_number=column[7],
+            level=column[8]
+        )
     context = {}
     return render(request, template, context)
 
