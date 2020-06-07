@@ -1,4 +1,4 @@
-/* #container{
+#container{
     width: 60%;
     height: fit-content;
     float: left;
@@ -16,7 +16,7 @@
     margin-left: 2%;
 }
 #heading{
-    border: 1px solid blue; 
+    /* border: 1px solid blue; */
     width: 55%;
     height: 20%;
     float: left;
@@ -33,18 +33,11 @@
     min-height: fit-content;
     border: 1px solid red;
     margin-bottom: 5vh;
-} */
-
-/* .text{
-    float: left;
-    width: 96%;
-    margin-left: 2%;
-} */
+}
 table{
     width: 100%;
     border-collapse: collapse;
 }
-
 th, td{
     /* border: 1px solid black; */
     padding: 10px 10px;
@@ -53,14 +46,11 @@ th, td{
 thead{
     background-color: grey;
 }
-
 tr:nth-child(even){
     background-color: lightgray;
 }
-
-h1,h2,h3,h4{
-    text-align: center;
-}
-tfoot{
-    border-top: 1px solid black;
+.text{
+    float: left;
+    width: 96%;
+    margin-left: 2%;
 }

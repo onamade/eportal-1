@@ -38,6 +38,12 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'django.contrib.humanize',
+    'users',
+    'administrator',
+    'calendar',
+    'lecturer',
+    'student',
+    'course',
     'result',
     'crispy_forms',
 ]
@@ -59,7 +65,7 @@ TEMPLATES = [
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
         'DIRS': [
             os.path.join(BASE_DIR, 'templates'),
-            os.path.join(BASE_DIR, 'result/templates/result'),
+            os.path.join(BASE_DIR, 'templates/result'),
         ],
         'APP_DIRS': True,
         'OPTIONS': {
@@ -130,15 +136,20 @@ STATIC_URL = '/static/'
 
 # User Settings
 
-AUTH_USER_MODEL = 'result.User'
+AUTH_USER_MODEL = 'users.User'
 
 LOGIN_REDIRECT_URL = '/'
 
 LOGOUT_REDIRECT_URL = '/'
 
+# LOGIN_REDIRECT_URL = 'dashboard'
+
+# LOGIN_URL = 'login'
+# LOGOUT_URL = 'logout'
+
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 MEDIA_URL = '/media/'
 
 
-TEMPLATES[0]['OPTIONS']['context_processors'].append("result.context_processors.semester_processor")
-TEMPLATES[0]['OPTIONS']['context_processors'].append("result.context_processors.session_processor")
+TEMPLATES[0]['OPTIONS']['context_processors'].append("users.context_processors.semester_processor")
+TEMPLATES[0]['OPTIONS']['context_processors'].append("users.context_processors.session_processor")
