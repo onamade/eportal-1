@@ -21,7 +21,6 @@ from calendar.forms import SessionForm, SemesterForm
 from course.forms import CourseAddForm, CourseAllocationForm
 
 
-
 # Create your views here.
 def get_chart(request, *args, **kwargs):
     all_query_score = ()
@@ -377,14 +376,14 @@ def StudentAddView(request):
         for column in csv.reader(io_string, delimiter=',', quotechar="|"):
             _, student_details = Users.objects.update_or_create(
                 password=make_password(column[0]),
-                last_login="2020-06-07 06:46:42.521991",
+                last_login="2020-06-08 09:46:42.521991",
                 is_superuser="0",
                 username=column[1],
                 first_name=column[2],
                 last_name=column[3],
                 is_staff="0",
                 is_active="1",
-                date_joined="2020-06-07 06:46:42",
+                date_joined="2020-06-08 09:46:42",
                 is_student="1",
                 is_lecturer="0",
                 phone=column[4],
