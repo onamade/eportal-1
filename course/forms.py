@@ -1,7 +1,7 @@
 from django import forms
 from .models import Course
 from student.models import LEVEL
-from calendar.models import SEMESTER
+from academic_calendar.models import SEMESTER
 from users.models import User
 from course.models import CourseAllocation
 

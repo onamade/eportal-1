@@ -11,13 +11,13 @@ from django.utils.decorators import method_decorator
 from django.views.generic import CreateView
 
 from result.models import TakenCourse, Result
-from users.decorators import lecturer_required
+from users.decorators import lecturer_required, admin_required
 from student.models import Student, CarryOverStudent, RepeatingStudent
 from course.models import Course, CourseAllocation
 from users.models import User
 from users.forms import StaffAddForm, StudentAddForm
-from calendar.models import Session, Semester
-from calendar.forms import SessionForm, SemesterForm
+from academic_calendar.models import Session, Semester
+from academic_calendar.forms import SessionForm, SemesterForm
 from course.forms import CourseAddForm, CourseAllocationForm
 
 
@@ -277,7 +277,7 @@ def semester_delete_view(request, pk):
 
 # @method_decorator([login_required, lecturer_required], name='dispatch')
 @login_required
-@lecturer_required
+@admin_required
 def StaffAddView(request):
     """A function that add lecturer details to the database from a CSV file
 
@@ -422,15 +422,37 @@ def delete_student(request, pk):
     return redirect('student_list')
 
 
-@method_decorator([login_required, lecturer_required], name='dispatch')
-class CourseAddView(CreateView):
-    model = Course
-    form_class = CourseAddForm
-    template_name = 'course/course_form.html'
+@login_required
+@admin_required
+def CourseAddView(request):
+    template = 'course/course_form.html'
+    prompt = {'order': 'upload courses in csv format'}
+    if request.method == "GET":
+        return render(request, template, prompt)
+    csv_file = request.FILES['file']
 
-    def form_valid(self, form):
-        form.save()
-        return redirect('course_allocation')
+    if not csv_file.name.endswith('.csv'):
+        HttpResponseRedirect(request, "You just uploaded a wrong file")
+
+    data_set = csv_file.read().decode('UTF-8')
+
+    io_string = io.StringIO(data_set)
+    next(io_string)
+    try:
+        for column in csv.reader(io_string, delimiter=',', quotechar="|"):
+            _, courses = Course.objects.update_or_create(
+                courseTitle=column[0],
+                courseCode=column[1],
+                courseUnit=column[2],
+                description=column[3],
+                level=column[4],
+                semester=column[5],
+                is_elective=column[6]
+            )
+    except:
+        messages.error(request, "Integrity Error:  course already exists")
+    context = {}
+    return render(request, template, context)
 
 
 @login_required

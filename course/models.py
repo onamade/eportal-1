@@ -1,7 +1,7 @@
 """[summary]
     """
 from users.models import User
-from calendar.models import SEMESTER, Session
+from academic_calendar.models import SEMESTER, Session
 from django.db import models
 from django.urls import reverse
 from student.models import LEVEL

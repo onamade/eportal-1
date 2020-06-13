@@ -1,6 +1,6 @@
 from django.db import models
 from course.models import Course
-from calendar.models import Semester, SECOND, SEMESTER
+from academic_calendar.models import Semester, SECOND, SEMESTER
 from django.urls import reverse
 from student.models import Student, CarryOverStudent, RepeatingStudent, LEVEL
 
@@ -30,8 +30,7 @@ COMMENT = (
 
 class TakenCourse(models.Model):
     student = models.ForeignKey(Student, on_delete=models.CASCADE)
-    course = models.ForeignKey(
-        Course, on_delete=models.CASCADE, related_name='taken_courses')
+    course = models.ForeignKey(Course, on_delete=models.CASCADE, related_name='taken_courses')
     ca = models.PositiveIntegerField(blank=True, null=True, default=0)
     exam = models.PositiveIntegerField(blank=True, null=True, default=0)
     total = models.PositiveIntegerField(blank=True, null=True, default=0)
@@ -151,6 +150,7 @@ class TakenCourse(models.Model):
                 return round(cgpa, 2)
             except ZeroDivisionError:
                 return 0
+        return
 
 
 class Result(models.Model):

@@ -1,3 +1,6 @@
+import csv
+import io
+
 from django.shortcuts import render, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
@@ -5,7 +8,7 @@ from django.http import HttpResponseRedirect
 from django.urls import reverse_lazy
 
 from users.decorators import lecturer_required
-from calendar.models import Session, Semester
+from academic_calendar.models import Session, Semester
 from course.models import Course
 from result.models import TakenCourse, Result
 
@@ -14,9 +17,8 @@ from result.models import TakenCourse, Result
 @login_required
 @lecturer_required
 def add_score(request):
-    """
-    Shows a page where a lecturer will select a course allocated to him for score entry.
-    in a specific semester and session
+    """Shows a page where a lecturer will select a course allocated to him for
+    score entry in a specific semester and session
 
     """
     current_session = Session.objects.get(is_current_session=True)
@@ -56,44 +58,41 @@ def add_score_for(request, id):
             "students": students,
         }
         return render(request, 'result/add_score_for.html', context)
-
-    if request.method == 'POST':
+    if request.method == "POST":
         ids = ()
-        data = request.POST.copy()
-        data.pop('csrfmiddlewaretoken', None)  # remove csrf_token
-        for key in data.keys():
-            # gather all the all students id (i.e the keys) in a tuple
-            ids = ids + (str(key), )
-        for s in range(0, len(
-                ids)):  # iterate over the list of student ids gathered above
-            student = TakenCourse.objects.get(id=ids[s])
-            courses = Course.objects.filter(
-                level=student.student.level).filter(
-                    semester=current_semester
-                )  # all courses of a specific level in current semester
+        cas = ()
+        exams = ()
+        csv_file = request.FILES['file']
+        data_set = csv_file.read().decode('UTF-8')
+        io_string = io.StringIO(data_set)
+        next(io_string)
+        for column in csv.reader(io_string, delimiter=',', quotechar="|"):
+            ids = ids + (column[0],)
+            cas = cas + (column[1],)
+            exams = exams + (column[2],)
+
+        for s in range(0, len(ids)):
+            student = TakenCourse.objects.get(
+                student__id_number=ids[s], course__id=id)
+            courses = TakenCourse.objects.filter(
+                student__id_number=ids[s], course__semester=current_semester)
             total_unit_in_semester = 0
             for i in courses:
                 if i == courses.count():
                     break
                 else:
-                    total_unit_in_semester += int(i.courseUnit)
-            # get list of score for current student in the loop
-            score = data.getlist(ids[s])
-            # subscript the list to get the fisrt value > ca score
-            ca = score[0]
-            exam = score[1]  # do thesame for exam score
-            # get the current student data
-            obj = TakenCourse.objects.get(pk=ids[s])
-            obj.ca = ca  # set current student ca score
-            obj.exam = exam  # set current student exam score
-            obj.total = obj.get_total(ca=ca, exam=exam)
-            obj.grade = obj.get_grade(ca=ca, exam=exam)
-            obj.comment = obj.get_comment(obj.grade)
-            obj.carry_over(obj.grade)
-            obj.is_repeating()
-            obj.save()
-            gpa = obj.calculate_gpa(total_unit_in_semester)
-            cgpa = obj.calculate_cgpa()
+                    total_unit_in_semester += int(i.course.courseUnit)
+            student.ca = cas[s]
+            student.exam = exams[s]
+            student.total = student.get_total(ca=student.ca, exam=student.exam)
+            student.grade = student.get_grade(ca=student.ca, exam=student.exam)
+            student.comment = student.get_comment(student.grade)
+            student.carry_over(student.grade)
+            student.is_repeating()
+            student.save()
+            gpa = student.calculate_gpa(total_unit_in_semester)
+            cgpa = student.calculate_cgpa()
+
             try:
                 a = Result.objects.get(student=student.student,
                                        semester=current_semester,
@@ -103,11 +102,14 @@ def add_score_for(request, id):
                 a.save()
             except:
                 Result.objects.get_or_create(student=student.student,
-                                             gpa=gpa,
                                              semester=current_semester,
-                                             level=student.student.level)
-        messages.success(request, 'Successfully Recorded! ')
+                                             level=student.student.level,
+                                             gpa=gpa,
+                                             cgpa=cgpa,
+                                             session=current_semester.session)
+        messages.success(request, 'Successfuly Uploaded and Recorded')
         return HttpResponseRedirect(
             reverse_lazy('add_score_for', kwargs={'id': id}))
     return HttpResponseRedirect(
-        reverse_lazy('add_score_for', kwargs={'id': id}))
+        reverse_lazy('add_score_for', kwargs={'id': id})
+    )

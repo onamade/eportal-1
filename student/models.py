@@ -1,7 +1,7 @@
 from django.db import models
 from users.models import User
 from django.urls import reverse
-from calendar.models import SEMESTER
+from academic_calendar.models import SEMESTER
 
 LEVEL = (
     ("100", 100),

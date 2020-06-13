@@ -12,7 +12,7 @@ from users.decorators import student_required, lecturer_required
 from student.models import Student
 from course.models import Course
 from result.models import TakenCourse, Result
-from calendar.models import Semester
+from academic_calendar.models import Semester
 
 # Create your views here.
 @login_required

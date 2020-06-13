@@ -45,7 +45,7 @@ INSTALLED_APPS = [
     'django.contrib.humanize',
     'users',
     'administrator',
-    'calendar',
+    'academic_calendar',
     'lecturer',
     'student',
     'course',

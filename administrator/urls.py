@@ -8,7 +8,7 @@ urlpatterns = [
     path('staff/delete/<int:pk>/', views.delete_staff, name="delete_staff"),
     path('courses/', views.course_list, name="course_list"),
     path('courses/add/new',
-         views.CourseAddView.as_view(),
+         views.CourseAddView,
          name="add_new_course"),
     path('course/delete/<int:pk>/', views.delete_course, name="delete_course"),
     path('course/edit/<int:pk>/', views.course_edit, name="course_edit"),

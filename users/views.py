@@ -3,7 +3,7 @@
     Returns:
         [type]: [description]
     """
-from calendar.models import Semester
+from academic_calendar.models import Semester
 from django.shortcuts import redirect, render
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth import update_session_auth_hash
