@@ -500,6 +500,41 @@ class CourseAllocationView(CreateView):
 
 
 @login_required
+@admin_required
+def course_allocation_upload(request):
+    """[summary]
+
+    Args:
+        request ([type]): [description]
+
+    Returns:
+        [type]: [description]
+    """
+    template = 'course/course_allocation_upload.html'
+    prompt = {'order': 'upload courses_allocations in csv format'}
+    if request.method == "GET":
+        return render(request, template, prompt)
+        
+    csv_file = request.FILES['file']
+
+    if not csv_file.name.endswith('.csv'):
+        HttpResponseRedirect(request, "You just uploaded a wrong file")
+
+    data_set = csv_file.read().decode('UTF-8')
+    io_string = io.StringIO(data_set)
+    next(io_string)
+    for column in csv.reader(io_string, delimiter=',', quotechar="|"):
+        try:
+            allocations = CourseAllocation.objects.get(lecturer=User.objects.get(username=column[0]))
+        except:
+            allocations = CourseAllocation.objects.create(lecturer=User.objects.get(username=column[0]))
+        allocations.courses.add(Course.objects.get(courseCode=column[1]))
+        allocations.save()
+    context = {}
+    return render(request, template, context)
+
+
+@login_required
 @lecturer_required
 def delete_course(request, pk):
     course = get_object_or_404(Course, pk=pk)
