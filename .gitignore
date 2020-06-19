@@ -7,3 +7,4 @@ __pycache__
 eportal/.idea
 workspace.xml
 venv/
+.idea/
