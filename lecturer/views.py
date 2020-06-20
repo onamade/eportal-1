@@ -11,6 +11,7 @@ from users.decorators import lecturer_required
 from academic_calendar.models import Session, Semester
 from course.models import Course
 from result.models import TakenCourse, Result
+from student.models import Student
 
 
 # Create your views here.
@@ -74,6 +75,7 @@ def add_score_for(request, id):
         for s in range(0, len(ids)):
             student = TakenCourse.objects.get(
                 student__id_number=ids[s], course__id=id)
+            # nursing = Student.objects.get(department='NURSING')
             courses = TakenCourse.objects.filter(
                 student__id_number=ids[s], course__semester=current_semester)
             total_unit_in_semester = 0

@@ -276,7 +276,7 @@
   "pk": 8,
   "fields": {
     "password": "pbkdf2_sha256$180000$vcSZVOBZCjCW$P59sj7dZlYp4c2NXi+IiPkN+/YUGKWkLZcEBM/LReKM=",
-    "last_login": "2020-06-20T13:10:06.831Z",
+    "last_login": "2020-06-20T14:58:39.049Z",
     "is_superuser": true,
     "username": "ayo",
     "first_name": "",
@@ -438,7 +438,9 @@
   "fields": {
     "user": 15,
     "id_number": "17/0543",
-    "level": "100"
+    "level": "100",
+    "faculty": "",
+    "department": ""
   }
 },
 {
@@ -447,7 +449,9 @@
   "fields": {
     "user": 16,
     "id_number": "17/0542",
-    "level": "100"
+    "level": "100",
+    "faculty": "",
+    "department": ""
   }
 },
 {
@@ -456,7 +460,9 @@
   "fields": {
     "user": 17,
     "id_number": "17/0541",
-    "level": "100"
+    "level": "100",
+    "faculty": "",
+    "department": ""
   }
 },
 {
