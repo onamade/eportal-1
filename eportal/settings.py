@@ -158,3 +158,7 @@ MEDIA_URL = '/media/'
 
 TEMPLATES[0]['OPTIONS']['context_processors'].append("users.context_processors.semester_processor")
 TEMPLATES[0]['OPTIONS']['context_processors'].append("users.context_processors.session_processor")
+
+FIXTURE_DIRS = (
+    os.path.join(BASE_DIR, 'fixtures'),
+)
