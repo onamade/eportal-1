@@ -57,6 +57,18 @@ class TakenCourse(models.Model):
             grade = F
         return grade
 
+    def get_nursing_grade(self, ca, exam):
+        total = int(ca) + int(exam)
+        if total >= 70:
+            grade = A
+        elif total >= 60:
+            grade = B
+        elif total >= 50:
+            grade = C
+        else:
+            grade = F
+        return grade
+
     def get_comment(self, grade):
         if not grade == "F":
             comment = PASS
