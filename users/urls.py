@@ -1,4 +1,4 @@
-from django.urls import path
+from django.urls import path, include
 from . import views
 
 urlpatterns = [
@@ -10,4 +10,5 @@ urlpatterns = [
     path('result/print/<int:id>/',
          views.result_sheet_pdf_view,
          name='result_sheet_pdf_view'),
+    path('', include('django.contrib.auth.urls')),
 ]

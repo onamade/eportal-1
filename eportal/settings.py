@@ -166,3 +166,9 @@ TEMPLATES[0]['OPTIONS']['context_processors'].append("users.context_processors.s
 FIXTURE_DIRS = (
     os.path.join(BASE_DIR, 'fixtures'),
 )
+
+#custom authentication settings
+AUTHENTICATION_BACKENDS = [
+    'django.contrib.auth.backends.ModelBackend',
+    'users.backends.StudentBackend',
+]
