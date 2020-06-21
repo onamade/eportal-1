@@ -10,5 +10,4 @@ urlpatterns = [
     path('result/print/<int:id>/',
          views.result_sheet_pdf_view,
          name='result_sheet_pdf_view'),
-    path('', include('django.contrib.auth.urls')),
 ]
