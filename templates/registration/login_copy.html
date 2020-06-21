@@ -1,0 +1,80 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <meta http-equiv="x-ua-compatible" content="ie=edge">
+    <title>{% block title %} Eportal | Login {% endblock title %}</title>
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.8.2/css/all.css">
+    <!-- Google Fonts -->
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700&display=swap">
+    <!-- Bootstrap core CSS -->
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/css/bootstrap.min.css"
+          integrity="sha384-9aIt2nRpC12Uk9gS9baDl411NQApFmC26EwAOH8WgZl5MYYxFfc+NcPb1dKGj7Sk" crossorigin="anonymous">
+    <!-- Material Design Bootstrap -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/mdbootstrap/4.19.0/css/mdb.min.css" rel="stylesheet">
+    <!-- Your custom styles (optional) -->
+    <link href="{% static 'css/style.css' %}" rel="stylesheet">
+</head>
+<body>
+<main>
+    <div class="row">
+        <div class="col-md-2" style="margin-right: 50px; "></div>
+        <div class="col-md-4">
+            <center>
+                <p id="icon" class="logo"> Eportal </p>
+            </center>
+            {% if form.errors %}
+                <h6 class="alert alert-warning alert-dismissible fade show" role="alert">
+                    Invalid username or password
+                    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </h6>
+            {% endif %}
+            <div class="card">
+
+                <h5 class="card-header info-color white-text text-center py-4">
+                    <strong>Sign in</strong>
+                </h5>
+                <div class="card-body px-lg-4 pt-0">
+                    <form method="post" action="{% url 'login' %}" class="text-center" style="color: #757575;">
+                        {% csrf_token %}
+                        {% for field in form %}
+                            <div class="md-form">
+                                {{ field }}
+                                <label for="materialLoginFormEmail">{{ field.html_name }}</label>
+                            </div>
+                        {% endfor %}
+                        <button class="btn btn-outline-info btn-rounded btn-block my-4 waves-effect z-depth-0"
+                                type="submit">Sign in
+                        </button>
+                        <input type="hidden" name="next" value="{{ next }}"/>
+                    </form>
+
+                </div>
+
+            </div>
+        </div>
+        <div class="col-md-5"></div>
+    </div>
+</main>
+
+<footer>
+
+</footer>
+
+<!-- SCRIPTS -->
+<!-- JQuery -->
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+<!-- Bootstrap tooltips -->
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.4/umd/popper.min.js"></script>
+<!-- Bootstrap core JavaScript -->
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.5.0/js/bootstrap.min.js"></script>
+<!-- MDB core JavaScript -->
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mdbootstrap/4.19.0/js/mdb.min.js"></script>
+</body>
+
+</html>

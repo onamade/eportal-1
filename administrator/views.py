@@ -393,7 +393,9 @@ def StudentAddView(request):
             _, student_profile = Student.objects.update_or_create(
                 user=User.objects.get(username=column[1]),
                 id_number=column[7],
-                level=column[8])
+                level=column[8],
+                faculty=column[9],
+                department=column[10])
     except:
         messages.error(request, "Integrity Error:  Users alredy exists")
     context = {}

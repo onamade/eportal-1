@@ -31,7 +31,7 @@ def add_score(request):
         semester=current_semester)
     courses = Course.objects.filter(
         allocated_course__lecturer__pk=request.user.id).filter(
-            semester=current_semester)
+        semester=current_semester)
     context = {
         "courses": courses,
     }
@@ -48,11 +48,11 @@ def add_score_for(request, id):
     if request.method == 'GET':
         courses = Course.objects.filter(
             allocated_course__lecturer__pk=request.user.id).filter(
-                semester=current_semester)
+            semester=current_semester)
         course = Course.objects.get(pk=id)
         students = TakenCourse.objects.filter(
             course__allocated_course__lecturer__pk=request.user.id).filter(
-                course__id=id).filter(course__semester=current_semester)
+            course__id=id).filter(course__semester=current_semester)
         context = {
             "courses": courses,
             "course": course,
@@ -74,7 +74,7 @@ def add_score_for(request, id):
 
         for s in range(0, len(ids)):
             student = TakenCourse.objects.get(
-                student__id_number=ids[s], course__id=id)
+                student__id_number=ids[s], course__id=id, )
             # nursing = Student.objects.get(department='NURSING')
             courses = TakenCourse.objects.filter(
                 student__id_number=ids[s], course__semester=current_semester)
@@ -87,7 +87,12 @@ def add_score_for(request, id):
             student.ca = cas[s]
             student.exam = exams[s]
             student.total = student.get_total(ca=student.ca, exam=student.exam)
-            student.grade = student.get_grade(ca=student.ca, exam=student.exam)
+            if student.student.department == 'NURSING' and not student.course.courseCode.startswith('GES'):
+                student.grade = student.get_nursing_grade(
+                    ca=student.ca, exam=student.exam)
+            else:
+                student.grade = student.get_grade(
+                    ca=student.ca, exam=student.exam)
             student.comment = student.get_comment(student.grade)
             student.carry_over(student.grade)
             student.is_repeating()
@@ -109,7 +114,7 @@ def add_score_for(request, id):
                                              gpa=gpa,
                                              cgpa=cgpa,
                                              session=current_semester.session)
-        messages.success(request, 'Successfuly Uploaded and Recorded')
+        messages.success(request, 'Successfully Uploaded and Recorded')
         return HttpResponseRedirect(
             reverse_lazy('add_score_for', kwargs={'id': id}))
     return HttpResponseRedirect(
