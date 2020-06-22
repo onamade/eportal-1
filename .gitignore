@@ -8,3 +8,4 @@ eportal/.idea
 workspace.xml
 venv/
 .idea/
+staticfiles/

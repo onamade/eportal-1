@@ -4,7 +4,9 @@ from django.contrib.auth.models import User
 from student.models import Student
 
 class StudentBackend(ModelBackend):
-
+    """
+    
+        """
     def authenticate(self, request, **kwargs):
         id_number = kwargs['username']
         password = kwargs['password']
