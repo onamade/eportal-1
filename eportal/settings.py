@@ -36,6 +36,8 @@ ALLOWED_HOSTS = ['*']
 # Application definition
 
 INSTALLED_APPS = [
+    'users',
+    'administrator',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -43,14 +45,13 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'django.contrib.humanize',
-    'users',
-    'administrator',
     'academic_calendar',
     'lecturer',
     'student',
     'course',
     'result',
     'crispy_forms',
+    # 'djcelery_email',
 ]
 
 MIDDLEWARE = [
@@ -173,6 +174,9 @@ EMAIL_HOST = os.getenv('EMAIL_HOST')
 EMAIL_HOST_USER = os.getenv('EMAIL_HOST_USER')
 EMAIL_HOST_PASSWORD = os.getenv('EMAIL_HOST_PASSWORD')
 EMAIL_PORT = 587
+
+# email backend using celery
+# EMAIL_BACKEND = 'djcelery_email.backends.CeleryEmailBackend'
 
 #custom authentication settings
 AUTHENTICATION_BACKENDS = [
