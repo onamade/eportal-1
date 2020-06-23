@@ -20,6 +20,8 @@ from academic_calendar.models import Session, Semester
 from academic_calendar.forms import SessionForm, SemesterForm
 from course.forms import CourseAddForm, CourseAllocationForm
 
+from .tasks import default_password, default_password_staff
+
 
 # Create your views here.
 def get_chart(request, *args, **kwargs):
@@ -304,8 +306,10 @@ def StaffAddView(request):
     io_string = io.StringIO(data_set)
     next(io_string)
     for column in csv.reader(io_string, delimiter=',', quotechar="|"):
+        raw_password = User.objects.make_random_password()
+        hashed_password = make_password(raw_password)
         _, lecturer_details = Users.objects.update_or_create(
-            password=make_password(column[0]),
+            password=hashed_password,
             last_login="2020-06-07 06:46:42.521991",
             is_superuser="0",
             username=column[1],
@@ -320,6 +324,7 @@ def StaffAddView(request):
             address=column[5],
             picture=None,
             email=column[6])
+        default_password_staff.delay(column[1], raw_password)
     context = {}
     return render(request, template, context)
 
@@ -374,8 +379,11 @@ def StudentAddView(request):
     next(io_string)
     try:
         for column in csv.reader(io_string, delimiter=',', quotechar="|"):
+            # make_password(column[0]),
+            raw_password = User.objects.make_random_password()
+            hashed_password = make_password(raw_password)
             _, student_details = Users.objects.update_or_create(
-                password=make_password(column[0]),
+                password=hashed_password,
                 last_login="2020-06-08 09:46:42.521991",
                 is_superuser="0",
                 username=column[1],
@@ -396,8 +404,12 @@ def StudentAddView(request):
                 level=column[8],
                 faculty=column[9],
                 department=column[10])
-    except:
-        messages.error(request, "Integrity Error:  Users alredy exists")
+                # lauch async task
+            default_password.delay(column[7], raw_password)
+    except IndexError:
+        """Possible Exceptions: IndexError, Integrity Error
+        """
+        messages.error(request, "Index Error:  Your CSV files is incomplete")
     context = {}
     return render(request, template, context)
 
@@ -516,7 +528,7 @@ def course_allocation_upload(request):
     prompt = {'order': 'upload courses_allocations in csv format'}
     if request.method == "GET":
         return render(request, template, prompt)
-        
+
     csv_file = request.FILES['file']
 
     if not csv_file.name.endswith('.csv'):
@@ -527,9 +539,11 @@ def course_allocation_upload(request):
     next(io_string)
     for column in csv.reader(io_string, delimiter=',', quotechar="|"):
         try:
-            allocations = CourseAllocation.objects.get(lecturer=User.objects.get(username=column[0]))
+            allocations = CourseAllocation.objects.get(
+                lecturer=User.objects.get(username=column[0]))
         except:
-            allocations = CourseAllocation.objects.create(lecturer=User.objects.get(username=column[0]))
+            allocations = CourseAllocation.objects.create(
+                lecturer=User.objects.get(username=column[0]))
         allocations.courses.add(Course.objects.get(courseCode=column[1]))
         allocations.save()
     context = {}
