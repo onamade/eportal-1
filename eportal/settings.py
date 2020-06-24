@@ -10,8 +10,9 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/2.1/ref/settings/
 """
 
+import dj_database_url
 import os
-import dotenv 
+import dotenv
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -28,7 +29,7 @@ if os.path.isfile(dotenv_file):
 
 # SECURITY WARNING: keep the secret key used in production secret!
 
-SECRET_KEY = os.environ("SECRET_KEY")
+SECRET_KEY = os.environ['SECRET_KEY']
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
@@ -170,14 +171,16 @@ MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 MEDIA_URL = '/media/'
 
 
-TEMPLATES[0]['OPTIONS']['context_processors'].append("users.context_processors.semester_processor")
-TEMPLATES[0]['OPTIONS']['context_processors'].append("users.context_processors.session_processor")
+TEMPLATES[0]['OPTIONS']['context_processors'].append(
+    "users.context_processors.semester_processor")
+TEMPLATES[0]['OPTIONS']['context_processors'].append(
+    "users.context_processors.session_processor")
 
 FIXTURE_DIRS = (
     os.path.join(BASE_DIR, 'fixtures'),
 )
 
-#email smtp settings
+# email smtp settings
 EMAIL_USE_TLS = True
 EMAIL_HOST = os.getenv('EMAIL_HOST')
 EMAIL_HOST_USER = os.getenv('EMAIL_HOST_USER')
@@ -187,13 +190,12 @@ EMAIL_PORT = 587
 # email backend using celery
 # EMAIL_BACKEND = 'djcelery_email.backends.CeleryEmailBackend'
 
-#custom authentication settings
+# custom authentication settings
 AUTHENTICATION_BACKENDS = [
     'django.contrib.auth.backends.ModelBackend',
     'users.backends.StudentBackend',
 ]
 
 # Update Database Configuration for heroku
-import dj_database_url
 prod_db = dj_database_url.config(conn_max_age=500)
 DATABASES['default'].update(prod_db)
