@@ -162,5 +162,5 @@ def course_registration_pdf(request):
         'Content-Disposition'] = f'filname=student_{student.id_number}.pdf'
     weasyprint.HTML(string=html).write_pdf(
         response,
-        stylesheets=[weasyprint.CSS(settings.STATIC_ROOT + 'css/pdf.css')])
+        stylesheets=[weasyprint.CSS(settings.STATIC_ROOT + '/css/pdf.css')])
     return response
