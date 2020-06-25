@@ -192,32 +192,32 @@ class CourseRegitsrationForm(forms.ModelForm):
 
 
 class ProfileForm(forms.ModelForm):
-    first_name = forms.CharField(
-        widget=forms.TextInput(attrs={'class': 'form-control'}),
-        label="Firstname",
-        max_length=30,
-        required=False)
-    last_name = forms.CharField(
-        widget=forms.TextInput(attrs={'class': 'form-control'}),
-        label="Lastname",
-        max_length=30,
-        required=False)
-    email = forms.EmailField(
-        widget=forms.EmailInput(attrs={'class': 'form-control'}),
-        label="Email",
-        max_length=75,
-        required=False)
-    phone = forms.CharField(
-        widget=forms.TextInput(attrs={'class': 'form-control'}),
-        label="Phone Number",
-        max_length=16,
-        required=False)
+    # first_name = forms.CharField(
+    #     widget=forms.TextInput(attrs={'class': 'form-control'}),
+    #     label="Firstname",
+    #     max_length=30,
+    #     required=False)
+    # last_name = forms.CharField(
+    #     widget=forms.TextInput(attrs={'class': 'form-control'}),
+    #     label="Lastname",
+    #     max_length=30,
+    #     required=False)
+    # email = forms.EmailField(
+    #     widget=forms.EmailInput(attrs={'class': 'form-control'}),
+    #     label="Email",
+    #     max_length=75,
+    #     required=False)
+    # phone = forms.CharField(
+    #     widget=forms.TextInput(attrs={'class': 'form-control'}),
+    #     label="Phone Number",
+    #     max_length=16,
+    #     required=False)
 
-    address = forms.CharField(
-        widget=forms.TextInput(attrs={'class': 'form-control'}),
-        label="Home Address",
-        max_length=200,
-        required=False)
+    # address = forms.CharField(
+    #     widget=forms.TextInput(attrs={'class': 'form-control'}),
+    #     label="Home Address",
+    #     max_length=200,
+    #     required=False)
 
     picture = forms.ImageField(
         widget=forms.FileInput(attrs={'class': 'form-control'}),
@@ -227,5 +227,5 @@ class ProfileForm(forms.ModelForm):
     class Meta:
         model = User
         fields = [
-            'first_name', 'last_name', 'email', 'phone', 'address', 'picture'
+            'picture'
         ]

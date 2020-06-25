@@ -32,9 +32,9 @@ if os.path.isfile(dotenv_file):
 SECRET_KEY = os.environ['SECRET_KEY']   
 
 # SECURITY WARNING: don't run with debug turned on in production!
-# DEBUG = True
-DEBUG = bool(os.environ.get('DJANGO_DEBUG', ''))
-TEMPLATE_DEBUG = DEBUG
+DEBUG = True
+# DEBUG = bool(os.environ.get('DJANGO_DEBUG', ''))
+# TEMPLATE_DEBUG = DEBUG
 
 ALLOWED_HOSTS = ['*']
 

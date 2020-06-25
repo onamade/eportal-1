@@ -111,11 +111,11 @@ def profile_update(request):
     if request.method == 'POST':
         form = ProfileForm(request.POST)
         if form.is_valid():
-            user.first_name = form.cleaned_data.get('first_name')
-            user.last_name = form.cleaned_data.get('last_name')
-            user.email = form.cleaned_data.get('email')
-            user.phone = form.cleaned_data.get('phone')
-            user.address = form.cleaned_data.get('address')
+            # user.first_name = form.cleaned_data.get('first_name')
+            # user.last_name = form.cleaned_data.get('last_name')
+            # user.email = form.cleaned_data.get('email')
+            # user.phone = form.cleaned_data.get('phone')
+            # user.address = form.cleaned_data.get('address')
             if request.FILES:
                 user.picture = request.FILES['picture']
             user.save()
@@ -124,10 +124,10 @@ def profile_update(request):
     else:
         form = ProfileForm(instance=user,
                            initial={
-                               'firstname': user.first_name,
-                               'lastname': user.last_name,
-                               'email': user.email,
-                               'phone': user.phone,
+                            #    'firstname': user.first_name,
+                            #    'lastname': user.last_name,
+                            #    'email': user.email,
+                            #    'phone': user.phone,
                                'picture': user.picture,
                            })
 
