@@ -54,7 +54,7 @@
                             </a>
                         </li>
                         <li class="nav-item">
-                            <a href="{% if request.user.is_superuser %}{% url 'manage_session' %}{% else %}#{% endif %}" class="nav-link border border-light green-text rounded waves-effect">
+                            <a href="{% if request.user.is_superuser %}{% url 'manage_session' %}{% else %}#{% endif %}" class="nav-link border border-light rounded waves-effect{% if request.user.is_superuser %} green-text {% else %} grey-text {% endif %}">
                                 <i class="fa fa-cogs mr-3"></i>{{ current_session }}
                             </a>
                         </li>
