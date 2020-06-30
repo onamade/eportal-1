@@ -4,7 +4,7 @@
         [type]: [description]
     """
 import datetime
-from academic_calendar.models import Session, Semester, FIRST 
+from academic_calendar.models import Session, Semester, FIRST
 
 y = datetime.datetime.today()
 session = str(y.year) + " / " + str(y.year + 1)

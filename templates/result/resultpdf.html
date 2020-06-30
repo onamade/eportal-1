@@ -1,0 +1,58 @@
+<html>
+<body>
+    <h1>Adeleke University,</h1>
+    <h2>Ede, Osun State</h2>
+    <h3>P.M.B 250, Loogun-Ogberin Road, Ede, Osun State.</h3>
+    <h4>Education | Excellence | Character</h4>
+    <p>
+        Name: {{ student.user.get_full_name }}<br>
+        Level: {{ student.level}}<br>
+        Matric No: {{ student.id_number }}
+    </p>
+    <table>
+    <thead>
+        <tr>
+            <th class="number">S/N</th>
+            <th>COURSE </th>
+            <th>COURSE TITLE</th>
+            {% comment %} <th>CA</th>
+            <th>Exam</th> {% endcomment %}
+            <th>SCORE</th>
+            <th>GRADE</th>
+            <th>POINTS</th>
+            <th>UNITS</th>
+            <th>CP</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for course in courses %}
+            <tr>
+                <th>{{ forloop.counter }}</th>
+                <td>{{ course.course.courseCode }}</td>
+                <td>{{ course.course.courseTitle }}</td>
+                {% comment %} <td>{{ course.ca }}</td>
+                <td>{{ course.exam }}</td> {% endcomment %}
+                <td>{{ course.total }}</td>
+                <td>{{ course.grade }}</td>
+                <td>{{ point }}</td>
+                <td>{{ course.course.courseUnit }}</td>
+                <td>{{ cp }}</td>
+            </tr>
+        {% endfor %}
+    </tbody>
+    <tfoot>
+        {% if total_registered_unit %}
+        <tr>
+            <th>Total Units</th>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td>{{ total_registered_unit }}</td>
+        </tr>
+        {% endif %}
+    </tfoot>
+    </table>
+</body>
+</html>

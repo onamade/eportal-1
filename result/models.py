@@ -101,7 +101,6 @@ class TakenCourse(models.Model):
                     student=self.student, level=self.student.level).delete()
             except:
                 pass
-
     def calculate_gpa(self, total_unit_in_semester):
         current_semester = Semester.objects.get(is_current_semester=True)
         student = TakenCourse.objects.filter(

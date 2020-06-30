@@ -32,20 +32,20 @@ def course_registration(request):
             messages.success(request, 'Courses Registered Successfully!')
         return redirect('course_registration')
     else:
+        current_semester = Semester.objects.get(is_current_semester=True)
         student = Student.objects.get(user__pk=request.user.id)
         taken_courses = TakenCourse.objects.filter(
-            student__user__id=request.user.id)
+            student__user__id=request.user.id, course__semester=current_semester)
         t = ()
         for i in taken_courses:
             t += (i.course.pk, )
-        current_semester = Semester.objects.get(is_current_semester=True)
-        courses = Course.objects.filter(level=student.level).exclude(id__in=t)
-        all_courses = Course.objects.filter(level=student.level)
+        courses = Course.objects.filter(level=student.level, semester=current_semester).exclude(id__in=t)
+        all_courses = Course.objects.filter(level=student.level, semester=current_semester)
 
         no_course_is_registered = False  # Check if no course is registered
         all_courses_are_registered = False
 
-        registered_courses = Course.objects.filter(level=student.level).filter(
+        registered_courses = Course.objects.filter(level=student.level, semester=current_semester).filter(
             id__in=t)
         if registered_courses.count(
         ) == 0:  # Check if number of registered courses is 0
@@ -54,14 +54,11 @@ def course_registration(request):
         if registered_courses.count() == all_courses.count():
             all_courses_are_registered = True
 
-        total_first_semester_unit = 0
-        total_sec_semester_unit = 0
+        # total_semester_unit = 0
+        # total_sec_semester_unit = 0
         total_registered_unit = 0
-        for i in courses:
-            if i.semester == "First":
-                total_first_semester_unit += int(i.courseUnit)
-            if i.semester == "Second":
-                total_sec_semester_unit += int(i.courseUnit)
+        # for i in courses:
+        #     total_semester_unit += int(i.courseUnit)
         for i in registered_courses:
             total_registered_unit += int(i.courseUnit)
         context = {
@@ -69,8 +66,8 @@ def course_registration(request):
             "no_course_is_registered": no_course_is_registered,
             "current_semester": current_semester,
             "courses": courses,
-            "total_first_semester_unit": total_first_semester_unit,
-            "total_sec_semester_unit": total_sec_semester_unit,
+            # "total_first_semester_unit": total_semester_unit,
+            # "total_sec_semester_unit": total_sec_semester_unit,
             "registered_courses": registered_courses,
             "total_registered_unit": total_registered_unit,
             "student": student,
@@ -102,7 +99,9 @@ def view_result(request):
     student = Student.objects.get(user__pk=request.user.id)
     current_semester = Semester.objects.get(is_current_semester=True)
     courses = TakenCourse.objects.filter(student__user__pk=request.user.id,
-                                         course__level=student.level)
+                                         course__level=student.level,
+                                         course__semester=current_semester
+                                         )
     result = Result.objects.filter(student__user__pk=request.user.id)
     current_semester_grades = {}
 
@@ -140,13 +139,14 @@ def course_registration_pdf(request):
     Returns:
         [type]: [description]
     """
+    current_semester = Semester.objects.get(is_current_semester=True)
     student = Student.objects.get(user__pk=request.user.id)
     taken_courses = TakenCourse.objects.filter(
-        student__user__id=request.user.id)
+        student__user__id=request.user.id, course__semester=current_semester)
     t = ()
     for i in taken_courses:
         t += (i.course.pk, )
-        registered_courses = Course.objects.filter(level=student.level).filter(
+        registered_courses = Course.objects.filter(level=student.level, semester=current_semester).filter(
             id__in=t)
         total_registered_unit = 0
         for i in registered_courses:
@@ -154,6 +154,54 @@ def course_registration_pdf(request):
     html = render_to_string(
         'course/pdf.html', {
             "student": student,
+            "registered_courses": registered_courses,
+            "total_registered_unit": total_registered_unit,
+        })
+    response = HttpResponse(content_type='application/pdf')
+    response[
+        'Content-Disposition'] = f'filname=student_{student.id_number}.pdf'
+    weasyprint.HTML(string=html).write_pdf(
+        response,
+        stylesheets=[weasyprint.CSS(settings.STATIC_ROOT + '/css/pdf.css')])
+    return response
+
+@login_required
+@student_required
+def result_pdf(request):
+    """View that allows student to print their result
+
+    Args:
+        request ([type]): [description]
+    """
+    student = Student.objects.get(user__pk=request.user.id)
+    current_semester = Semester.objects.get(is_current_semester=True)
+    courses = TakenCourse.objects.filter(student__user__pk=request.user.id,
+                                         course__level=student.level,
+                                         course__semester=current_semester
+                                       )
+    result = Result.objects.filter(student__user__pk=request.user.id)
+    current_CGPA = 0
+    try:
+        a = Result.objects.get(student__user__pk=request.user.id,
+                               level=student.level,
+                               semester="Second")
+        current_CGPA = a.cgpa
+    except:
+        current_CGPA = 0    
+    t = ()
+    for i in courses:
+        t += (i.course.pk, )
+        registered_courses = Course.objects.filter(level=student.level).filter(
+            id__in=t)
+        total_registered_unit = 0
+        for i in registered_courses:
+            total_registered_unit += int(i.courseUnit)
+    html = render_to_string(
+        'result/resultpdf.html', {
+            "student": student,
+            "courses": courses,
+            "result": result,
+            "current_CGPA": current_CGPA,
             "registered_courses": registered_courses,
             "total_registered_unit": total_registered_unit,
         })

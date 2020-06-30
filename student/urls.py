@@ -10,4 +10,7 @@ urlpatterns = [
     path('coursepdf/',
          views.course_registration_pdf,
          name='course_registration_pdf'),
+    path('resultpdf/',
+          views.result_pdf,
+          name='result_pdf')
 ]
