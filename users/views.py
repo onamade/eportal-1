@@ -12,7 +12,7 @@ from django.contrib import messages
 from student.models import Student, CarryOverStudent, RepeatingStudent
 from course.models import Course
 from result.models import TakenCourse, Result
-from .decorators import lecturer_required
+from .decorators import lecturer_required, admin_required
 from .forms import ProfileForm
 from .models import User
 
@@ -104,6 +104,8 @@ def user_profile(request, id):
 
 
 @login_required
+@lecturer_required
+@admin_required
 def profile_update(request):
     """ Check if the fired request is a POST then grap changes and update the records otherwise we show an empty form """
     user = request.user.id

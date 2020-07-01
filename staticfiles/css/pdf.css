@@ -1,38 +1,36 @@
-#container{
-    width: 60%;
-    height: fit-content;
-    float: left;
-    border: 1px solid black;
-    margin-left: 20%;
+.details{
+    margin-right: 5%;
+    margin-left: 4%;
 }
-.square{
-    margin-top: 5vh;
-    width: 20%;
-    height: 23vh;
-    border: 1px solid red;
-}
-#square1{
-    float: left;
-    margin-left: 2%;
-}
-#heading{
-    /* border: 1px solid blue; */
-    width: 55%;
-    height: 20%;
-    float: left;
+#leads{
+    /* border: 2px solid black; */
+    display: flex;
     text-align: center;
 }
-#square2{
-    float: right;
-    margin-right: 2%;
+.details3{
+    font-size: larger;
 }
-#table{
-    float: left;
-    margin-left: 2%;
-    min-width: 96%;
-    min-height: fit-content;
-    border: 1px solid red;
-    margin-bottom: 5vh;
+#brand, #logo{
+    margin-right: 1%;
+}
+#brand{
+    /* border: 1px solid red; */
+    width: 55%;
+    /* display: ; */
+}
+.logo{
+    /* border: 1px solid black; */
+    width: 21.5%;
+    height: 150px;
+    margin-top: 20px;
+    margin-bottom: 20px;
+}
+#contain{
+    display: flex;
+}
+#logo{
+}
+#image{
 }
 table{
     width: 100%;
@@ -48,9 +46,4 @@ thead{
 }
 tr:nth-child(even){
     background-color: lightgray;
-}
-.text{
-    float: left;
-    width: 96%;
-    margin-left: 2%;
 }

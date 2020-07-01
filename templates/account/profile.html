@@ -1,4 +1,4 @@
-{% extends 'base.html' %}
+c{% extends 'base.html' %}
 {% load static %}
 {% load humanize %}
 
@@ -40,8 +40,10 @@ overflow-y: auto;
   <!-- Card image -->
   <div class="view overlay">
     <img class="card-img-top" src="{{ request.user.get_picture }}" alt="User Image">
-    <a class="mask" href="{% url 'edit_profile' %}">
+    <a class="mask" {% if request.user.is_superuser or request.user.is_lecturer %}href="{% url 'edit_profile' %}"{% else %}href="#"{% endif %}>
+      {% if request.user.is_superuser or request.user.is_lecturer %}
       <div class="mask white-text">Change Picture</div>
+      {% endif %}
     </a>
   </div>
 
@@ -62,7 +64,6 @@ overflow-y: auto;
     <small class="card-title">Name: {{ request.user.get_full_name|capfirst }}</small><br>
     <small class="card-title">Role: Student</small><br>
     <small class="card-title">Level: {{ level.level }}</small>
-    <a href="{% url 'edit_profile' %}" class="btn btn-primary">Edit Profile</a>
   </div>
 {% endif %}
 
@@ -93,7 +94,7 @@ overflow-y: auto;
       <th scope="col">Course Code</th>
       <th scope="col">Course Title</th>
       <th scope="col">Course Unit</th>
-      <th scope="col">Action</th>
+      <th scope="col">Scoresheet</th>
     </tr>
   </thead>
   <tbody>
@@ -104,7 +105,8 @@ overflow-y: auto;
       <td>{{ course }}</td>
       <td>{{ course.courseUnit }}</td>
       <td>
-	  	  <span class="table-remove"><a href="{% url 'add_score_for' course.id %}" class="btn btn-info btn-rounded btn-sm my-0">Mark</a></span>
+	  	  {% comment %} <span class="table-remove"><a href="{% url 'add_score_for' course.id %}" class="btn btn-info btn-rounded btn-sm my-0">Download</a></span> {% endcomment %}
+	  	  <span class="table-remove"><a href="{% url 'scoresheet_download' %}" class="btn btn-info btn-rounded btn-sm my-0">Download</a></span>
 	    </td>
     </tr>
     {% empty %}

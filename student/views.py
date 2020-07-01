@@ -12,7 +12,7 @@ from users.decorators import student_required, lecturer_required
 from student.models import Student
 from course.models import Course
 from result.models import TakenCourse, Result
-from academic_calendar.models import Semester
+from academic_calendar.models import Semester, Session
 
 # Create your views here.
 @login_required
@@ -140,6 +140,7 @@ def course_registration_pdf(request):
         [type]: [description]
     """
     current_semester = Semester.objects.get(is_current_semester=True)
+    current_session = Session.objects.get(is_current_session=True)
     student = Student.objects.get(user__pk=request.user.id)
     taken_courses = TakenCourse.objects.filter(
         student__user__id=request.user.id, course__semester=current_semester)
@@ -156,11 +157,13 @@ def course_registration_pdf(request):
             "student": student,
             "registered_courses": registered_courses,
             "total_registered_unit": total_registered_unit,
+            "current_session": current_session,
+            "current_semester": current_semester
         })
     response = HttpResponse(content_type='application/pdf')
     response[
         'Content-Disposition'] = f'filname=student_{student.id_number}.pdf'
-    weasyprint.HTML(string=html).write_pdf(
+    weasyprint.HTML(string=html, base_url=request.build_absolute_uri()).write_pdf(
         response,
         stylesheets=[weasyprint.CSS(settings.STATIC_ROOT + '/css/pdf.css')])
     return response
@@ -175,11 +178,12 @@ def result_pdf(request):
     """
     student = Student.objects.get(user__pk=request.user.id)
     current_semester = Semester.objects.get(is_current_semester=True)
+    current_session = Session.objects.get(is_current_session=True)
     courses = TakenCourse.objects.filter(student__user__pk=request.user.id,
                                          course__level=student.level,
                                          course__semester=current_semester
                                        )
-    result = Result.objects.filter(student__user__pk=request.user.id)
+    result = Result.objects.filter(student__user__pk=request.user.id, semester=current_semester)
     current_CGPA = 0
     try:
         a = Result.objects.get(student__user__pk=request.user.id,
@@ -187,7 +191,10 @@ def result_pdf(request):
                                semester="Second")
         current_CGPA = a.cgpa
     except:
-        current_CGPA = 0    
+        current_CGPA = 0
+
+    # point = 0
+    cp = 0
     t = ()
     for i in courses:
         t += (i.course.pk, )
@@ -204,11 +211,13 @@ def result_pdf(request):
             "current_CGPA": current_CGPA,
             "registered_courses": registered_courses,
             "total_registered_unit": total_registered_unit,
+            "current_semester": current_semester,
+            "current_session": current_session,
         })
     response = HttpResponse(content_type='application/pdf')
     response[
         'Content-Disposition'] = f'filname=student_{student.id_number}.pdf'
-    weasyprint.HTML(string=html).write_pdf(
+    weasyprint.HTML(string=html, base_url=request.build_absolute_uri()).write_pdf(
         response,
-        stylesheets=[weasyprint.CSS(settings.STATIC_ROOT + '/css/pdf.css')])
+        stylesheets=[weasyprint.CSS(settings.STATIC_ROOT + '/css/resultpdf.css')])
     return response

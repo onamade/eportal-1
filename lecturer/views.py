@@ -4,7 +4,7 @@ import io
 from django.shortcuts import render, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
-from django.http import HttpResponseRedirect
+from django.http import HttpResponseRedirect, HttpResponse
 from django.urls import reverse_lazy
 
 from users.decorators import lecturer_required
@@ -41,7 +41,7 @@ def add_score(request):
 @login_required
 @lecturer_required
 def add_score_for(request, id):
-    """Shows a page where a lecturer will add score for studens that are taking courses allocated to him
+    """Shows a page where a lecturer will add score for students that are taking courses allocated to him
     in a specific semester and session
     """
     current_semester = Semester.objects.get(is_current_semester=True)
@@ -120,3 +120,21 @@ def add_score_for(request, id):
     return HttpResponseRedirect(
         reverse_lazy('add_score_for', kwargs={'id': id})
     )
+
+
+@login_required
+@lecturer_required
+def scoresheet_download(request):
+    """A function that handles scoresheet template download for lecturers
+
+    Args:
+        request ([type]): [description]
+
+    Returns:
+        [text/csv]: [return a csv file]
+    """
+    response = HttpResponse(content_type='text/csv')
+    response['Content-Disposition'] = 'attachment; filename="scoresheet.csv"'
+    writer = csv.writer(response)
+    writer.writerow(['Matric No', 'CA', 'Exam'])
+    return response

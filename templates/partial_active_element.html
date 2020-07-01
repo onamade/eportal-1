@@ -47,7 +47,7 @@
     <a href="{% url 'add_score' %}" class="list-group-item 
         {% if active == 'Add_Score' %} active {% endif %} waves-effect">
         <i class="fa fa-book mr-3" aria-hidden="true"></i>
-        Manage Score
+        Upload Scoresheet
     </a>
     {% endif %}
     
@@ -73,12 +73,11 @@
         {% if active == 'manage_semester' %} active {% endif %} waves-effect">
         <i class="fa  fa-gear mr-3" aria-hidden="true"></i>Semester Setting</a>
     {% endif %}
-
-    {% if request.user.is_student %}
+    
     <a href="#" class="list-group-item 
         {% if active == 'payment' %} active {% endif %} waves-effect">
-        <i class="fa  fa-cc-mastercard mr-3" aria-hidden="true"></i>Pay Departmental</a>
-    {% endif %}
+        <i class="fa  fa-cc-mastercard mr-3" aria-hidden="true"></i>Wiki How</a>
+
     {% if request.user.is_superuser %}
     <a href="#" class="list-group-item 
         {% if active == 'system_setting' %} active {% endif %} waves-effect">

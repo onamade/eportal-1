@@ -1,14 +1,29 @@
+{% load static %}
 <html>
 <body>
-    <h1>Adeleke University,</h1>
-    <h2>Ede, Osun State</h2>
-    <h3>P.M.B 250, Loogun-Ogberin Road, Ede, Osun State.</h3>
-    <h4>Education | Excellence | Character</h4>
-    <p>
-        Name: {{ student.user.get_full_name }}<br>
-        Level: {{ student.level}}<br>
-        Matric No: {{ student.id_number }}
-    </p>
+    <header style="text-align: center;">
+        <h1 style="text-transform: capitalize;">Department of {{ student.department }}</h1>
+        <div id="contain">
+            <div class="logo" id="logo">
+                <img src="{% static 'img/au.png' %}" alt="student picture" style="margin-top:10%; width: 80%; height: 80%;">  
+            </div>
+            <div id="brand">
+                <h1>Adeleke University,</h1>
+                <h2>Ede, Osun State</h2>
+                <h3><span style="border-bottom: 2px solid black">Statement Of Result</span></h3>
+            </div>
+            <div class="logo" id="image">
+                <img src="{{ student.user.get_picture }}" alt="student picture" style="margin-top:14.5%; width: 70%; height: 70%;">
+            </div>
+        </div>
+    </header>
+    <span class="details">Name: {{ student.user.get_full_name }}</span>
+    <span class="details">Level: {{ student.level}}</span>
+    <span class="details">Matric No: {{ student.id_number }}</span><br><br>
+    <span class="details">Faculty: {{ student.faculty }}</span>
+    <span class="details">Session: {{ current_session }}</span>
+    <span class="details">Semester: {{ current_semester }}</span><br><br>
+    <span class="details" style="text-transform: capitalize;">Course of Study: {{ student.department }}</span><br><br>
     <table>
     <thead>
         <tr>
@@ -39,19 +54,42 @@
                 <td>{{ cp }}</td>
             </tr>
         {% endfor %}
+        <tr>
+            <th></th>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td>Total</td>
+            <td>{{ total_registered_unit }}</td>
+            <td>cps</td>
+        </tr>
+        <tr>
+            <th></th>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td>GPA</td>
+            <td>
+            {% for result in result %}
+                {{ result.gpa }}
+            {% endfor %}
+            </td>
+        </tr>
+        <tr>
+            <th></th>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td>CGPA</td>
+            <td>{{ current_CGPA }}</td>
+        </tr>
     </tbody>
     <tfoot>
-        {% if total_registered_unit %}
-        <tr>
-            <th>Total Units</th>
-            <td></td>
-            <td></td>
-            <td></td>
-            <td></td>
-            <td></td>
-            <td>{{ total_registered_unit }}</td>
-        </tr>
-        {% endif %}
     </tfoot>
     </table>
 </body>
