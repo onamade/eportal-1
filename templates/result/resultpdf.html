@@ -30,13 +30,9 @@
             <th class="number">S/N</th>
             <th>COURSE </th>
             <th>COURSE TITLE</th>
-            {% comment %} <th>CA</th>
-            <th>Exam</th> {% endcomment %}
             <th>SCORE</th>
             <th>GRADE</th>
-            <th>POINTS</th>
             <th>UNITS</th>
-            <th>CP</th>
         </tr>
     </thead>
     <tbody>
@@ -45,13 +41,9 @@
                 <th>{{ forloop.counter }}</th>
                 <td>{{ course.course.courseCode }}</td>
                 <td>{{ course.course.courseTitle }}</td>
-                {% comment %} <td>{{ course.ca }}</td>
-                <td>{{ course.exam }}</td> {% endcomment %}
                 <td>{{ course.total }}</td>
                 <td>{{ course.grade }}</td>
-                <td>{{ point }}</td>
                 <td>{{ course.course.courseUnit }}</td>
-                <td>{{ cp }}</td>
             </tr>
         {% endfor %}
         <tr>
@@ -59,15 +51,11 @@
             <td></td>
             <td></td>
             <td></td>
-            <td></td>
             <td>Total</td>
             <td>{{ total_registered_unit }}</td>
-            <td>cps</td>
         </tr>
         <tr>
             <th></th>
-            <td></td>
-            <td></td>
             <td></td>
             <td></td>
             <td></td>
@@ -80,8 +68,6 @@
         </tr>
         <tr>
             <th></th>
-            <td></td>
-            <td></td>
             <td></td>
             <td></td>
             <td></td>

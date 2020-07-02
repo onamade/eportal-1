@@ -101,23 +101,23 @@ class TakenCourse(models.Model):
                     student=self.student, level=self.student.level).delete()
             except:
                 pass
-    def get_point(self, student):
+    # def get_point(self, student):
         # current_semester = Semester.objects.get(is_current_semester=True)
         # student = TakenCourse.objects.filter(
         #     student=self.student, course__level=self.student.level, course__semester=current_semester)
-        for i in student:
+        # for i in student:
             # courseUnit = i.course.courseUnit
-            if i.grade == A:
-                point = 5
-            elif i.grade == B:
-                point = 4
-            elif i.grade == C:
-                point = 3
-            elif i.grade == D:
-                point = 2
-            else:
-                point = 0
-            return point
+            # if i.grade == A:
+            #     point = 5
+            # elif i.grade == B:
+            #     point = 4
+            # elif i.grade == C:
+            #     point = 3
+            # elif i.grade == D:
+            #     point = 2
+            # else:
+            #     point = 0
+            # return point
     def calculate_gpa(self, total_unit_in_semester):
         current_semester = Semester.objects.get(is_current_semester=True)
         student = TakenCourse.objects.filter(

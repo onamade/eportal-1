@@ -193,8 +193,9 @@ def result_pdf(request):
     except:
         current_CGPA = 0
 
-    # point = 0
+    point = 0
     cp = 0
+    # cps = 0
     t = ()
     for i in courses:
         t += (i.course.pk, )
@@ -213,6 +214,8 @@ def result_pdf(request):
             "total_registered_unit": total_registered_unit,
             "current_semester": current_semester,
             "current_session": current_session,
+            # "point": point,
+            # "cp": cp
         })
     response = HttpResponse(content_type='application/pdf')
     response[
