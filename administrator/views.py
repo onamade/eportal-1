@@ -3,7 +3,7 @@ import io
 
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
-from django.http import JsonResponse, HttpResponseRedirect
+from django.http import JsonResponse, HttpResponseRedirect, HttpResponse
 from django.contrib import messages
 from django.contrib.auth import get_user_model
 from django.contrib.auth.hashers import make_password
@@ -404,7 +404,11 @@ def StudentAddView(request):
                 level=column[8],
                 faculty=column[9],
                 department=column[10])
-                # lauch async task
+                # lauch asynchronous task
+            # response = HttpResponse(content_type='text/csv')
+            # response['Content-Disposition'] = 'attachment; filename="student_deatails.csv"'
+            # writer = csv.writer(response)
+            # writer.writerow([column[7], raw_password])
             default_password.delay(column[7], raw_password)
     except IndexError:
         """Possible Exceptions: IndexError, Integrity Error
@@ -517,12 +521,6 @@ class CourseAllocationView(CreateView):
 @admin_required
 def course_allocation_upload(request):
     """[summary]
-
-    Args:
-        request ([type]): [description]
-
-    Returns:
-        [type]: [description]
     """
     template = 'course/course_allocation_upload.html'
     prompt = {'order': 'upload courses_allocations in csv format'}

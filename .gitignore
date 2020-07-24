@@ -1,10 +1,6 @@
-# JetBrains PyCharm settings
-.env
-.vscode/
-__pycache__/*
-__pycache__*
-__pycache__
-eportal/.idea
-workspace.xml
-venv/
+# created by virtualenv automatically
 .idea/
+venv/
+.env
+allocation.csv
+db.sqlite3
