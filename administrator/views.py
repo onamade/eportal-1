@@ -406,7 +406,7 @@ def StudentAddView(request):
                 department=column[10])
                 # lauch asynchronous task
             # response = HttpResponse(content_type='text/csv')
-            # response['Content-Disposition'] = 'attachment; filename="student_deatails.csv"'
+            # response['Content-Disposition'] = 'attachment; filename="student_details.csv"'
             # writer = csv.writer(response)
             # writer.writerow([column[7], raw_password])
             default_password.delay(column[7], raw_password)
@@ -416,8 +416,10 @@ def StudentAddView(request):
         messages.error(request, "Index Error:  Your CSV files is incomplete")
     context = {}
     return render(request, template, context)
-
-
+    # finally:
+    #     response = HttpResponse(csv_file)
+    #     response['Content-Disposition'] = 'attachment; filename=student_details.csv'
+    #     return response
 @login_required
 @lecturer_required
 def edit_student(request, pk):

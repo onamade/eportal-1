@@ -34,19 +34,19 @@
 
                     <h6 class="mb-2 mb-sm-0 pt-1">
                         <a href="/">Home Page</a>
-                        {% if request.user.is_superuser %}}
+                        {% if request.user.is_superuser %}
                             <span>/</span>
                             <span>Allocated Courses</span>
                         {% endif %}
                     </h6>
                 </div>
-            {% if request.user.is_superuser %}}
+            {% if request.user.is_superuser %}
             </div>
-            <h6 class="mb-2 mb-sm-0 pt-1">
+            {% comment %} <h6 class="mb-2 mb-sm-0 pt-1">
             <a class="pull-right btn btn-default btn-rounded mb-3" href="" class="btn btn-default btn-rounded mb-4">
                <i class="fa fa-file-pdf-o" aria-hidden="true"></i> PDF
             </a>
-            </h6>
+            </h6> {% endcomment %}
 
                 <!--Card content-->
   <div class="table-wrapper-scroll-y">

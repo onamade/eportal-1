@@ -34,11 +34,11 @@ overflow-y: auto;
  <!-- Heading -->
     <h6 class="mb-2 mb-sm-0 pt-1">
       <a href="{% url 'add_new_course' %}" class="btn btn-default btn-rounded mb-4">
-        Add New Course
+        Upload Courses
       </a>
-      <a class="pull-right btn btn-default btn-rounded mb-3" href="{{ course_registration_form }}" class="btn btn-default btn-rounded mb-4">
+      {% comment %} <a class="pull-right btn btn-default btn-rounded mb-3" href="{{ course_registration_form }}" class="btn btn-default btn-rounded mb-4">
         <i class="fa fa-file-pdf-o" aria-hidden="true"></i> PDF
-      </a>
+      </a> {% endcomment %}
     </h6>
 <div class="table-wrapper-scroll-y">
 
