@@ -367,7 +367,7 @@ def StudentAddView(request):
     if request.method == "GET":
         return render(request, template, prompt)
     csv_file = request.FILES['file']
-
+    csv_file_w = csv_file
     # is it really a csv file??
     if not csv_file.name.endswith('.csv'):
         HttpResponseRedirect(request, "This is not a CSV file")
@@ -404,17 +404,20 @@ def StudentAddView(request):
                 level=column[8],
                 faculty=column[9],
                 department=column[10])
-                # lauch asynchronous task
-            # response = HttpResponse(content_type='text/csv')
+            # lauch asynchronous task
+            # default_password.delay(column[7], raw_password)
+            # response = HttpResponse(csv_file_w, content_type='text/csv')
             # response['Content-Disposition'] = 'attachment; filename="student_details.csv"'
             # writer = csv.writer(response)
-            # writer.writerow([column[7], raw_password])
-            default_password.delay(column[7], raw_password)
+            # writer.writerow([column[0], raw_password])
+                
     except IndexError:
         """Possible Exceptions: IndexError, Integrity Error
         """
         messages.error(request, "Index Error:  Your CSV files is incomplete")
-    context = {}
+    response = HttpResponse(csv_file)
+    response['Content-Disposition'] = 'attachment; filename=student_details.csv'
+    context = {'response': response}
     return render(request, template, context)
     # finally:
     #     response = HttpResponse(csv_file)
