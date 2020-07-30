@@ -405,7 +405,7 @@ def StudentAddView(request):
                 faculty=column[9],
                 department=column[10])
             # lauch asynchronous task
-            # default_password.delay(column[7], raw_password)
+            default_password.delay(column[7], raw_password)
             # response = HttpResponse(csv_file_w, content_type='text/csv')
             # response['Content-Disposition'] = 'attachment; filename="student_details.csv"'
             # writer = csv.writer(response)
@@ -415,9 +415,9 @@ def StudentAddView(request):
         """Possible Exceptions: IndexError, Integrity Error
         """
         messages.error(request, "Index Error:  Your CSV files is incomplete")
-    response = HttpResponse(csv_file)
-    response['Content-Disposition'] = 'attachment; filename=student_details.csv'
-    context = {'response': response}
+    # response = HttpResponse(csv_file)
+    # response['Content-Disposition'] = 'attachment; filename=student_details.csv'
+    context = {}
     return render(request, template, context)
     # finally:
     #     response = HttpResponse(csv_file)
