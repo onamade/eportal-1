@@ -1,36 +1,24 @@
 from .base import *
 
 DEBUG = False
-ADMINS = (
-    ('Peter B', 'shell.appointment@gmail.com')
-)
+ADMINS = [(
+    ('Peter B', 'shell.appointment@gmail.com'),
+)]
 
 ALLOWED_HOSTS = ['*']
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'eportal',
-        'USER': 'eportal',
-        'PASSWORD': os.environ['PASSWORD'],
-        'HOST': os.environ['HOST'],
-        'PORT': os.environ['PORT'],
-    }
-}
-
-# ALLOWED_HOSTS = ['*']
 # DATABASES = {
 #     'default': {
-#         'ENGINE': 'django.db.backends.mysql',
-#         # 'OPTIONS': {
-#         #     'read_default_file': '/etc/mysql/my.cnf',
-#         # },
-#         'NAME': 'educa',
-#         'USER': 'educa',
-#         'PASSWORD': 'educa',
+#         'ENGINE': 'django.db.backends.postgresql',
+#         'NAME': 'eportal',
+#         'USER': 'eportal',
+#         'PASSWORD': os.environ['PASSWORD'],
+#         'HOST': os.environ['HOST'],
+#         'PORT': os.environ['PORT'],
 #     }
 # }
-
-# sudo uwsgi --module=educa.wsgi:application --env=DJANGO_SETTINGS_MODULE=educa.settings.pro --master --pidfile=/tmp/project-master.pid --http=127.0.0.1:8000 --uid=1000 --virtualenv=/home/educa/educaenv/ --plugin=python3
-
-# SECURE_SSL_REDIRECT = True
-# CSRF_COOKIE_SECURE = True
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
+    }
+}
