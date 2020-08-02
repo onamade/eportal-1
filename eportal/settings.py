@@ -15,15 +15,12 @@ import os
 import dotenv
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
-BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(
-                           os.path.join(__file__, os.pardir)
-                           )))
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 dotenv_file = os.path.join(BASE_DIR, ".env")
 if os.path.isfile(dotenv_file):
     dotenv.load_dotenv(dotenv_file)
 
-# print(os.getenv('PASSWORD'))
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/2.1/howto/deployment/checklist/
@@ -33,7 +30,7 @@ if os.path.isfile(dotenv_file):
 SECRET_KEY = os.environ['SECRET_KEY']
 
 # SECURITY WARNING: don't run with debug turned on in production!
-
+DEBUG = False
 # DEBUG = bool(os.environ.get('DJANGO_DEBUG', ''))
 # TEMPLATE_DEBUG = DEBUG
 
@@ -98,6 +95,13 @@ WSGI_APPLICATION = 'eportal.wsgi.application'
 
 # Database
 # https://docs.djangoproject.com/en/2.1/ref/settings/#databases
+
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
+    }
+}
 
 
 # Password validation
@@ -192,6 +196,6 @@ AUTHENTICATION_BACKENDS = [
     'users.backends.StudentBackend',
 ]
 
-# # Update Database Configuration for heroku
-# prod_db = dj_database_url.config(conn_max_age=500)
-# DATABASES['default'].update(prod_db)
+# Update Database Configuration for heroku
+prod_db = dj_database_url.config(conn_max_age=500)
+DATABASES['default'].update(prod_db)
