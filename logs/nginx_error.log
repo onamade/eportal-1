@@ -1,0 +1,1 @@
+2020/08/02 16:04:12 [error] 40995#40995: *1 upstream timed out (110: Connection timed out) while reading response header from upstream, client: 197.210.226.189, server: 164.90.218.111, request: "GET /accounts/login/?next=/ HTTP/1.1", upstream: "uwsgi://unix:///tmp/eportal.sock", host: "164.90.218.111"
