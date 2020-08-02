@@ -1,7 +1,7 @@
 from django.contrib import admin
 from django.urls import path, include
 from django.contrib.auth import views
-from .settings import base
+from .import settings
 from django.contrib.staticfiles.urls import static
 from django.contrib.staticfiles.urls import staticfiles_urlpatterns
 
@@ -22,5 +22,5 @@ urlpatterns = [
     # path('register/student/', result_view.StudentAddView.as_view(), name='student_signup'),
 ]
 urlpatterns += staticfiles_urlpatterns()
-urlpatterns += static(base.MEDIA_URL, document_root=base.MEDIA_ROOT)
-urlpatterns += static(base.STATIC_URL, document_root=base.STATIC_ROOT)
+urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
