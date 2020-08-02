@@ -1,8 +1,12 @@
 # created by virtualenv automatically
 .idea/
 venv/
-.env
+#.env
 allocation.csv
 db.sqlite3
 .vscode/
 env/
+# Elastic Beanstalk Files
+.elasticbeanstalk/*
+!.elasticbeanstalk/*.cfg.yml
+!.elasticbeanstalk/*.global.yml

@@ -34,7 +34,7 @@ DEBUG = True
 # DEBUG = bool(os.environ.get('DJANGO_DEBUG', ''))
 # TEMPLATE_DEBUG = DEBUG
 
-ALLOWED_HOSTS = ['*']
+ALLOWED_HOSTS = ['eportal-env.eba-sms3wcps.us-west-2.elasticbeanstalk.com']
 
 
 # Application definition
