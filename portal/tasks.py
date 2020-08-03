@@ -1,7 +1,3 @@
-"""
-Using Celery shedule some tasks that are likely to fail if not 
-scheduled.
-"""
 from celery import task
 from django.core.mail import send_mail
 
@@ -12,10 +8,7 @@ from .models import User
 @task
 def default_password(id_number, pwd):
     """
-        Task to send auto-generated passwords to student's e-mail
-
-    Args:
-        id_number ([matric_number]): [description]
+    Task to send auto-generated passwords to student's e-mail
     """
     student = Student.objects.get(id_number=id_number)
     subject = f'Matric Number: {id_number}'
@@ -24,17 +17,14 @@ def default_password(id_number, pwd):
               f'Your Matric Number is: {id_number}' \
               f'Your Password is: {pwd}'
     mail_sent = send_mail(
-        subject, message, 'shell.appointment@gmail.com', [student.user.email])
+        subject, message, 'noreply@aueportal.com', [student.user.email])
 
     return mail_sent
 
 @task
 def default_password_staff(username, pwd):
     """
-        Task to send auto-generated passwords to staff's e-mail
-
-    Args:
-        username ([Username]): [description]
+    Task to send auto-generated passwords to staff's e-mail
     """
     staff = User.objects.get(username=username)
     subject = f'Username: {username}'
@@ -43,6 +33,6 @@ def default_password_staff(username, pwd):
               f'Your Username is: {username}' \
               f'Your Password is: {pwd}'
     mail_sent = send_mail(
-        subject, message, 'shell.appointment@gmail.com', [staff.email])
+        subject, message, 'noreply@aueportal.com', [staff.email])
 
     return mail_sent

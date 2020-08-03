@@ -1,6 +1,3 @@
-"""
-Using Custom Re to make sure usernames provided are valid.
-"""
 import re
 
 from django.core import validators

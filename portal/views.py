@@ -115,7 +115,10 @@ def user_profile(request, id):
 @lecturer_required
 @admin_required
 def profile_update(request):
-    """ Check if the fired request is a POST then grap changes and update the records otherwise we show an empty form """
+    """ 
+    Check if the fired request is a POST then grap changes and
+    update the records otherwise we show an empty form.
+    """
     user = request.user.id
     user = User.objects.get(pk=user)
     if request.method == 'POST':
@@ -152,7 +155,6 @@ def change_password(request):
         'form': form,
     })
 
-# Create your views here.
 def get_chart(request, *args, **kwargs):
     all_query_score = ()
     levels = (100, 200, 300, 400, 500)  # all the levels in the department
@@ -270,7 +272,10 @@ def session_list_view(request):
 @login_required
 @lecturer_required
 def session_add_view(request):
-    """ check request method, if POST we add session otherwise show empty form """
+    """
+    check request method, if POST we add session otherwise
+    show empty form
+    """
     if request.method == 'POST':
         form = SessionForm(request.POST)
         if form.is_valid():
@@ -323,7 +328,7 @@ def session_delete_view(request, pk):
 @login_required
 @lecturer_required
 def semester_list_view(request):
-    semesters = Semester.objects.all().order_by('-semester')
+    semesters = Semester.objects.all().order_by('-session')
     return render(request, 'result/manage_semester.html', {
         "semesters": semesters,
     })
@@ -405,21 +410,12 @@ def semester_delete_view(request, pk):
         messages.success(request, "Semester successfully deleted")
     return redirect('manage_semester')
 
-
-# @method_decorator([login_required, lecturer_required], name='dispatch')
 @login_required
 @admin_required
 def StaffAddView(request):
-    """A function that add lecturer details to the database from a CSV file
-
-    Args:
-        request ([type]): [description]
-    """
+    """A function that add lecturer details to the database from a CSV file"""
     template = "registration/add_staff.html"
     Users = get_user_model()
-
-    # setup a stream which is when we loop through each line we are
-    # to handle a data in a stream
     prompt = {'order': 'Just upload the csv file for now'}
     if request.method == "GET":
         return render(request, template, prompt)
@@ -428,8 +424,8 @@ def StaffAddView(request):
     # is it really a csv file??
     if not csv_file.name.endswith('.csv'):
         messages.error(request, "This is not a CSV file")
-
     data_set = csv_file.read().decode('UTF-8')
+
     # setup a stream which is when we loop through each line,
     # and handle each student data in the stream.
     io_string = io.StringIO(data_set)
@@ -437,23 +433,24 @@ def StaffAddView(request):
     for column in csv.reader(io_string, delimiter=',', quotechar="|"):
         raw_password = User.objects.make_random_password()
         hashed_password = make_password(raw_password)
+        usernames = column[0][0].lower() + column[1].lower()
         _, lecturer_details = Users.objects.update_or_create(
             password=hashed_password,
-            last_login="2020-06-07 06:46:42.521991",
+            last_login="2020-08-03 09:46:42.521991",
             is_superuser="0",
-            username=column[1],
-            first_name=column[2],
-            last_name=column[3],
+            username=usernames,
+            first_name=column[0],
+            last_name=column[1],
             is_staff="0",
             is_active="1",
-            date_joined="2020-06-07 06:46:42",
+            date_joined="2020-08-03 09:46:42",
             is_student="0",
             is_lecturer="1",
-            phone=column[4],
-            address=column[5],
+            phone=column[2],
+            address=column[3],
             picture=None,
-            email=column[6])
-        default_password_staff.delay(column[1], raw_password)
+            email=column[4])
+        default_password_staff.delay(usernames, raw_password)
     context = {}
     return render(request, template, context)
 
@@ -482,74 +479,61 @@ def delete_staff(request, pk):
 
 @login_required
 def StudentAddView(request):
-    """
-    A function that add users details to the database from a CSV file
-    """
+    """A function that add users details to the database from a CSV file"""
     template = "registration/add_student.html"
     Users = get_user_model()
-
-    # setup a stream which is when we loop through each line we are
-    # to handle a data in a stream
     prompt = {'order': 'Just upload the csv file for now'}
+
     if request.method == "GET":
         return render(request, template, prompt)
+
     csv_file = request.FILES['file']
     csv_file_w = csv_file
-    # is it really a csv file??
+
     if not csv_file.name.endswith('.csv'):
         HttpResponseRedirect(request, "This is not a CSV file")
 
     data_set = csv_file.read().decode('UTF-8')
-    # setup a stream which is when we loop through each line,
-    # and handle each student data in the stream.
     io_string = io.StringIO(data_set)
     next(io_string)
     try:
         for column in csv.reader(io_string, delimiter=',', quotechar="|"):
-            # make_password(column[0]),
             raw_password = User.objects.make_random_password()
             hashed_password = make_password(raw_password)
+            usernames = column[0][0].lower() + column[1].lower()
             _, student_details = Users.objects.update_or_create(
                 password=hashed_password,
-                last_login="2020-06-08 09:46:42.521991",
+                last_login="2020-08-03 09:46:42.521991",
                 is_superuser="0",
-                username=column[1],
-                first_name=column[2],
-                last_name=column[3],
+                username=usernames,
+                first_name=column[0],
+                last_name=column[1],
                 is_staff="0",
                 is_active="1",
-                date_joined="2020-06-08 09:46:42",
+                date_joined="2020-08-03 09:46:42",
                 is_student="1",
                 is_lecturer="0",
-                phone=column[4],
-                address=column[5],
+                phone=column[2],
+                address=column[3],
                 picture=None,
-                email=column[6])
+                email=column[4])
             _, student_profile = Student.objects.update_or_create(
-                user=User.objects.get(username=column[1]),
-                id_number=column[7],
-                level=column[8],
-                faculty=column[9],
-                department=column[10])
+                user=User.objects.get(username=usernames),
+                id_number=column[5],
+                level=column[6],
+                department=column[7],
+                faculty=column[8])
             # lauch celery task
-            default_password.delay(column[7], raw_password)
+            default_password.delay(column[5 ], raw_password)
             # response = HttpResponse(csv_file_w, content_type='text/csv')
             # response['Content-Disposition'] = 'attachment; filename="student_details.csv"'
             # writer = csv.writer(response)
-            # writer.writerow([column[0], raw_password])
-                
+            # writer.writerow([column[0], raw_password])           
     except IndexError:
-        """Possible Exceptions: IndexError, Integrity Error
-        """
+        """Other Possible Exceptions: IndexError, Integrity Error"""
         messages.error(request, "Index Error:  Your CSV files is incomplete")
-    # response = HttpResponse(csv_file)
-    # response['Content-Disposition'] = 'attachment; filename=student_details.csv'
     context = {}
     return render(request, template, context)
-    # finally:
-    #     response = HttpResponse(csv_file)
-    #     response['Content-Disposition'] = 'attachment; filename=student_details.csv'
-    #     return response
 
 @login_required
 @lecturer_required
@@ -812,6 +796,18 @@ def course_registration(request):
 
 @login_required
 @student_required
+def registered_courses(request):
+    level = Student.objects.get(user__pk=request.user.id)
+    courses = TakenCourse.objects.filter(student__user__id=request.user.id,
+                                             course__level=level.level)
+    context = {
+        'courses': courses,
+        'level': level,
+        }
+    return render(request, 'course/registered_courses.html', context)
+
+@login_required
+@student_required
 def course_drop(request):
     if request.method == 'POST':
         ids = ()
@@ -866,14 +862,7 @@ def view_result(request):
 @login_required
 @student_required
 def course_registration_pdf(request):
-    """View to handle WeasyPrint PDF for student Course Registration
-
-    Args:
-        request ([type]): [description]
-
-    Returns:
-        [type]: [description]
-    """
+    """View to handle WeasyPrint PDF for student Course Registration"""
     current_semester = Semester.objects.get(is_current_semester=True)
     current_session = Session.objects.get(is_current_session=True)
     student = Student.objects.get(user__pk=request.user.id)
@@ -906,11 +895,7 @@ def course_registration_pdf(request):
 @login_required
 @student_required
 def result_pdf(request):
-    """View that allows student to print their result
-
-    Args:
-        request ([type]): [description]
-    """
+    """View that allows student to print their result"""
     student = Student.objects.get(user__pk=request.user.id)
     current_semester = Semester.objects.get(is_current_semester=True)
     current_session = Session.objects.get(is_current_session=True)
@@ -963,9 +948,9 @@ def result_pdf(request):
 @login_required
 @lecturer_required
 def add_score(request):
-    """Shows a page where a lecturer will select a course allocated to him for
-    score entry in a specific semester and session
-
+    """
+    Shows a page where a lecturer will select a course allocated to him for
+    score entry in a specific semester and session.
     """
     current_session = Session.objects.get(is_current_session=True)
     current_semester = get_object_or_404(Semester,
@@ -986,8 +971,9 @@ def add_score(request):
 @login_required
 @lecturer_required
 def add_score_for(request, id):
-    """Shows a page where a lecturer will add score for students that are taking courses allocated to him
-    in a specific semester and session
+    """
+    Shows a page where a lecturer will add score for students that are taking courses allocated to him
+    in a specific semester and session.
     """
     current_semester = Semester.objects.get(is_current_semester=True)
     if request.method == 'GET':
@@ -1070,14 +1056,7 @@ def add_score_for(request, id):
 @login_required
 @lecturer_required
 def scoresheet_download(request):
-    """A function that handles scoresheet template download for lecturers
-
-    Args:
-        request ([type]): [description]
-
-    Returns:
-        [text/csv]: [return a csv file]
-    """
+    """A function that handles scoresheet template download for lecturers"""
     response = HttpResponse(content_type='text/csv')
     response['Content-Disposition'] = 'attachment; filename="scoresheet.csv"'
     writer = csv.writer(response)

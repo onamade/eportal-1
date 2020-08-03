@@ -122,41 +122,6 @@ overflow-y: auto;
     </div>
   </div>
   {% endif %}
-{% if request.user.is_student %}
-    <div class="col-md-7 text-center">
-      <p>Registered Courses</p>
-  <div class="table-wrapper-scroll-y">
-
-  <table class="table table-bordered table-striped">
-  <thead>
-    <tr>
-      <th scope="col">#</th>
-      <th scope="col">Course Code</th>
-      <th scope="col">Course Title</th>
-      <th scope="col">Course Unit</th>
-    </tr>
-  </thead>
-  <tbody>
-    {% for course in courses %}
-    <tr>
-      <th scope="row">{{ forloop.counter }}</th>
-      <td>{{ course.course.courseCode }}</td>
-      <td>{{ course.course.courseTitle }}</td>
-      <td>{{ course.course.courseUnit }}</td>
-    </tr>
-    {% empty %}
-    <tr>
-    <td>{{ course.courseCode }}</td>
-      <td></td>
-      <td>No course is registered this session !</td>
-      <td></td>
-    </tr>
-  {% endfor %}
-  </tbody>
-</table>
-    </div>
-  </div>
-  {% endif %}
   {% if request.user.is_superuser %}
     <div class="col-md-7 text-center">
       <p>All staff list</p>

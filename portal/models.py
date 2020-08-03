@@ -1,8 +1,3 @@
-#######################################################################
-#  Models that contains the details and structre of data that is used
-#  throughout the database for this application.
-#######################################################################
-
 from django.db import models
 from django.contrib.auth.models import AbstractUser
 from django.conf import settings

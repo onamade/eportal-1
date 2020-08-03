@@ -6,3 +6,4 @@ allocation.csv
 db.sqlite3
 .vscode/
 env/
+celerybeat-schedule

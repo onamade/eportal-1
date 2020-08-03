@@ -42,6 +42,12 @@
         {% if active == 'course_registration' %} active {% endif %} waves-effect">
         <i class="fa fa-book mr-3" aria-hidden="true"></i>Course Resgistration</a>
     {% endif %}
+    
+    {% if request.user.is_student %}
+    <a href="{% url 'registered_courses' %}" class="list-group-item 
+        {% if active == 'registered_courses' %} active {% endif %} waves-effect">
+        <i class="fa fa-book mr-3" aria-hidden="true"></i>Registered Courses</a>
+    {% endif %}
 
     {% if request.user.is_lecturer %}
     <a href="{% url 'add_score' %}" class="list-group-item 
